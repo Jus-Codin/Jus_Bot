@@ -16,7 +16,7 @@ class PythonShellBot(discord.Client):
 
   async def on_message(self, message: discord.Message):
     channel = message.channel
-    if message.author == self.user:
+    if message.author == self.user or message.author.bot:
       return
     elif pythonPrefix(message.content) or channel.name == 'python-shell':
       codeOut = io.StringIO()
