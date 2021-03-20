@@ -78,8 +78,6 @@ class PaginatorInterface:
     self.page_reactions_sent = False
 
     self.task: asyncio.Task = None
-    self.send_lock: asyncio.Event = asyncio.Event()
-    self.update_lock: asyncio.Lock = asyncio.Semaphore(value=kwargs.pop('update_max', 2))
 
   @property
   def pages(self):
@@ -89,11 +87,6 @@ class PaginatorInterface:
   @property
   def page_count(self):
     return len(self.pages)
-
-  @property
-  def page_size(self) -> int:
-    page_count = self.page_count
-    return self.paginator.max_size + len(f'\nPage {page_count}/{page_count}')
 
   @property
   def current_page(self):
@@ -106,19 +99,17 @@ class PaginatorInterface:
     page_num = f'\nPage {self.current_page + 1}/{self.page_count}'
     if isinstance(current_page, discord.Embed):
       embed = current_page.set_footer(text=page_num[1:])
-      return {'embed':embed}
+      return {'embed':embed, 'content':None}
     elif isinstance(current_page, str):
       content = current_page + page_num
-      return {'content': content}
+      return {'content': content, 'embed':None}
     elif isinstance(current_page, discord.File):
       content = page_num[1:]
-      return {'file':current_page, 'content':content}
+      return {'file':current_page, 'content':content, 'embed':None}
 
   async def send_to(self, destination: discord.abc.Messageable):
     self.message = await destination.send(**self.send_kwargs)
     await self.message.add_reaction(self.emojis.close)
-
-    self.send_lock.set()
 
     if self.task:
       self.task.cancel()
@@ -153,7 +144,7 @@ class PaginatorInterface:
         emoji = emoji.name
       
       tests = (
-        payload.message.id == self.message.id,
+        payload.message_id == self.message.id,
         emoji,
         emoji in self.emojis,
         payload.user_id != self.bot.user.id
@@ -163,6 +154,8 @@ class PaginatorInterface:
 
     try:
       while not self.bot.is_closed():
+        while not self.page_reactions_sent:
+          await asyncio.sleep(0.1)
         payload = await self.bot.wait_for('raw_reaction_add', check=check, timeout=self.timeout)
 
         emoji = payload.emoji
@@ -200,24 +193,15 @@ class PaginatorInterface:
           pass
 
   async def update(self):
-    if self.update_lock.locked():
-      return
-    
-    await self.send_lock.wait()
+    if not self.message:
+      await asyncio.sleep(0.5)
 
-    async with self.update_lock:
-      if self.update_lock.locked():
-        await asyncio.sleep(1)
+    if not self.page_reactions_sent and self.page_count > 1:
+      self.bot.loop.create_task(self.send_all_reactions())
+      self.page_reactions_sent = True
 
-      if not self.message:
-        await asyncio.sleep(0.5)
-
-      if not self.page_reactions_sent and self.page_count > 1:
-        self.bot.loop.create_task(self.send_all_reactions())
-        self.page_reactions_sent = True
-
-      try:
-        await self.message.edit(**self.send_kwargs)
-      except discord.NotFound:
-        if self.task:
-          self.task.cancel()
+    try:
+      await self.message.edit(**self.send_kwargs)
+    except discord.NotFound:
+      if self.task:
+        self.task.cancel()
