@@ -1,1 +1,1 @@
-from .Paginator import *
+from . import *
