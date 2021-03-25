@@ -1,7 +1,7 @@
 import humanize
 import discord
 from discord.ext import commands
-from ..Utils import Paginator, PaginatorInterface
+from ..Utils import Paginator, PaginatorInterface, get
 
 class Diagnostics(commands.Cog):
   """Commands to get info about the bot"""
@@ -30,5 +30,12 @@ class Diagnostics(commands.Cog):
     interface = PaginatorInterface(self.bot, paginator)
     await interface.send_to(ctx)
 
+  @commands.command()
+  async def rtest(self, ctx, url):
+    async def returner(result):
+      return result.status, await result.text()
+    r = await get(url, returner)
+    await ctx.send('\n'.join(map(str, (f'Response from {url}:', *r))))
+    
 def setup(bot):
   bot.add_cog(Diagnostics(bot))
