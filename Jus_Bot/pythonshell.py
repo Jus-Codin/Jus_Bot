@@ -37,11 +37,11 @@ class PythonShellBot(discord.Client):
       except KeyboardInterrupt as e:
         # Prevent people from accidentally shutting the bot down
         tb = traceback.format_exc()
-        await channel.send('```' + f'Error: {e}\n{tb}' + '```')
+        await channel.send('```' + f'{e}\n{tb}' + '```')
         return
       except Exception as e:
         tb = traceback.format_exc()
-        await channel.send('```' + f'Error: {e}\n{tb}' + '```')
+        await channel.send('```' + f'{e}\n{tb}' + '```')
         return
 
       sys.stdout = sys.__stdout__
