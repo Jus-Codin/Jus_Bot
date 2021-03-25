@@ -21,6 +21,8 @@ class PythonShellBot(discord.Client):
     elif pythonPrefix(message.content) or channel.name == 'python-shell':
       codeOut = io.StringIO()
       code = message.content.replace('```python', '```py', 1)[6:-3] if pythonPrefix(message.content) else message.content
+      if code.startswith('i#'):
+        return
       sys.stdout = codeOut
 
       try:
