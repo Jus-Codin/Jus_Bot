@@ -14,15 +14,55 @@ EMOJI_DEFAULT = EmojiSettings(
     close="\N{BLACK SQUARE FOR STOP}"
 )
 
+class Paginator:
+  """
+  Class to make pages for discord messages
+  """
+  max_size = 2000
+
+  def __init__(self, pages: list=[], **kwargs):
+    if not isinstance(pages, list):
+      raise TypeError('pages has to be a list')
+    self._check(*pages)
+    self._pages = pages
+
+  def _check(self, *pages):
+    for i in range(len(pages)):
+      if isinstance(pages[i], str):
+        if len(pages[i]) > self.max_size:
+          raise ValueError(f'Page {i+1} has more than 2000 characters')
+      if not isinstance(pages[i], (discord.Embed, discord.File, str)):
+        raise TypeError('Page must be an Embed, File, or String')
+
+  def add_page(self, page: str, index=-1):
+    """Add a page"""
+    self._check(*page)
+    if index == -1:
+      self._pages.append(page)
+    else:
+      self._pages.insert(index)
+  
+  def delete_page(self, index: int):
+    """Delete a page"""
+    self._pages.pop(index)
+
+  def clear(self):
+    """Clears all pages in paginator"""
+    self._pages = []
+
+  @property
+  def pages(self):
+    """Returns rendered list of pages"""
+    return self._pages
+
 class PaginatorInterface:
   """
   Message and reaction based interface for paginators.
   """
-  max_page_size = 2000
 
-  def __init__(self, bot: commands.Bot, paginator: commands.Paginator, **kwargs):
-    if not isinstance(paginator, commands.Paginator):
-      raise TypeError('paginatior must be an instance on commands.Paginator')
+  def __init__(self, bot: commands.Bot, paginator: Paginator, **kwargs):
+    if not isinstance(paginator, Paginator):
+      raise TypeError('paginatior must be an instance of Utils.Paginator')
 
     self._current_page = 0
 
@@ -38,31 +78,15 @@ class PaginatorInterface:
     self.page_reactions_sent = False
 
     self.task: asyncio.Task = None
-    self.send_lock: asyncio.Event = asyncio.Event()
-    self.update_lock: asyncio.Lock = asyncio.Semaphore(value=kwargs.pop('update_max', 2))
-
-    if self.page_size > self.max_page_size:
-      raise ValueError(
-        f'Paginator passed has too large of a page size for this interface. '
-        f'({self.page_size} > {self.max_page_size})'
-      )
 
   @property
   def pages(self):
-    paginator_pages = list(self.paginator._pages)
-    if len(self.paginator._current_page) > 1:
-      paginator_pages.append('\n'.join(self.paginator._current_page) + '\n' + (self.paginator.suffix or ''))
-    
+    paginator_pages = self.paginator._pages
     return paginator_pages
 
   @property
   def page_count(self):
     return len(self.pages)
-
-  @property
-  def page_size(self) -> int:
-    page_count = self.page_count
-    return self.paginator.max_size + len(f'\nPage {page_count}/{page_count}')
 
   @property
   def current_page(self):
@@ -71,16 +95,21 @@ class PaginatorInterface:
 
   @property
   def send_kwargs(self) -> dict:
-    current_page = self.current_page
-    page_num = f'\nPage {current_page + 1}/{self.page_count}'
-    content = self.pages[current_page] + page_num
-    return {'content': content}
+    current_page = self.pages[self.current_page]
+    page_num = f'\nPage {self.current_page + 1}/{self.page_count}'
+    if isinstance(current_page, discord.Embed):
+      embed = current_page.set_footer(text=page_num[1:])
+      return {'embed':embed, 'content':None}
+    elif isinstance(current_page, str):
+      content = current_page + page_num
+      return {'content': content, 'embed':None}
+    elif isinstance(current_page, discord.File):
+      content = page_num[1:]
+      return {'file':current_page, 'content':content, 'embed':None}
 
   async def send_to(self, destination: discord.abc.Messageable):
     self.message = await destination.send(**self.send_kwargs)
     await self.message.add_reaction(self.emojis.close)
-
-    self.send_lock.set()
 
     if self.task:
       self.task.cancel()
@@ -115,7 +144,7 @@ class PaginatorInterface:
         emoji = emoji.name
       
       tests = (
-        payload.message.id == self.message.id,
+        payload.message_id == self.message.id,
         emoji,
         emoji in self.emojis,
         payload.user_id != self.bot.user.id
@@ -125,6 +154,8 @@ class PaginatorInterface:
 
     try:
       while not self.bot.is_closed():
+        while not self.page_reactions_sent:
+          await asyncio.sleep(0.1)
         payload = await self.bot.wait_for('raw_reaction_add', check=check, timeout=self.timeout)
 
         emoji = payload.emoji
@@ -162,46 +193,15 @@ class PaginatorInterface:
           pass
 
   async def update(self):
-    if self.update_lock.locked():
-      return
-    
-    await self.send_lock.wait()
+    if not self.message:
+      await asyncio.sleep(0.5)
 
-    async with self.update_lock:
-      if self.update_lock.locked():
-        await asyncio.sleep(1)
+    if not self.page_reactions_sent and self.page_count > 1:
+      self.bot.loop.create_task(self.send_all_reactions())
+      self.page_reactions_sent = True
 
-      if not self.message:
-        await asyncio.sleep(0.5)
-
-      if not self.page_reactions_sent and self.page_count > 1:
-        self.bot.loop.create_task(self.send_all_reactions())
-        self.page_reactions_sent = True
-
-      try:
-        await self.message.edit(**self.send_kwargs)
-      except discord.NotFound:
-        if self.task:
-          self.task.cancel()
-
-# Work in progress
-"""
-class PaginatorEmbedInterface(PaginatorInterface):
-  def __init__(self, *args, **kwargs):
-    self._embed = kwargs.pop('embed', None) or discord.Embed()
-    super().__init__(*args, **kwargs)
-
-  @property
-  def send_kwargs(self) -> dict:
-    current_page = self.current_page
-    self._embed.set_author(name='Jus_Bot', icon_url=self.bot.user.avatar_url)
-    self._embed.description = self.pages[current_page]
-    self._embed.set_footer(text=f'Page {current_page + 1}/{self.page_count}')
-    return {'embed': self._embed}
-
-  max_page_size =2048
-
-  @property
-  def page_size(self) -> int:
-    return self.paginator.max_size
-    """
+    try:
+      await self.message.edit(**self.send_kwargs)
+    except discord.NotFound:
+      if self.task:
+        self.task.cancel()
