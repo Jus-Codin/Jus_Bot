@@ -107,8 +107,9 @@ class PaginatorInterface:
       content = page_num[1:]
       return {'file':current_page, 'content':content, 'embed':None}
 
-  async def send_to(self, destination: discord.abc.Messageable):
-    self.message = await destination.send(**self.send_kwargs)
+  async def send_to(self, ctx: commands.Context):
+    self.ctx = ctx
+    self.message = await ctx.send(**self.send_kwargs)
     await self.message.add_reaction(self.emojis.close)
 
     if self.task:
@@ -144,6 +145,7 @@ class PaginatorInterface:
         emoji = emoji.name
       
       tests = (
+        payload.user_id == self.ctx.author.id,
         payload.message_id == self.message.id,
         emoji,
         emoji in self.emojis,
@@ -188,7 +190,7 @@ class PaginatorInterface:
 
       for emoji in filter(None, self.emojis):
         try:
-          await self.message.remove.reaction(emoji, self.bot.user)
+          await self.message.remove_reaction(emoji, self.bot.user)
         except (discord.Forbidden, discord.NotFound):
           pass
 
