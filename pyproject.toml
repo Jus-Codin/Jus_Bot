@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "discord-bot-mk3-1"
+name = "discord-bot-mk3"
 version = "0.1.0"
 description = ""
 authors = ["Replit user <replituser@example.com>"]
