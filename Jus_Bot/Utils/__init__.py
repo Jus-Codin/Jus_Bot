@@ -1,2 +1,3 @@
-from .Paginator import *
-from .AioRequest import *
+from .paginator import *
+from .aioRequests import *
+from .WolframAlpha import *

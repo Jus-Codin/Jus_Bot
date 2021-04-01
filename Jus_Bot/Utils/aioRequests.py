@@ -1,5 +1,5 @@
 """
-A method wrapper for aiohttp
+A wrapper for Aiohttp
 """
 from aiohttp import ClientSession
 

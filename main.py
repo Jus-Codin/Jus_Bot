@@ -17,7 +17,8 @@ def get_prefix(bot, message: discord.Message):
 bot = Jus_Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
 
 Extensions = [
-  'Jus_Bot.Cogs.Dianogstics'
+  'Jus_Bot.Cogs.Dianogstics',
+  'Jus_Bot.Cogs.WebUtils'
 ]
 
 for extension in Extensions:
