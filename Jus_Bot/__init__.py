@@ -2,6 +2,7 @@ from discord.ext.commands import Bot, errors, MissingPermissions, MissingRequire
 from discord.errors import Forbidden
 from discord.client import _cleanup_loop
 from .pythonshell import PythonShellBot
+from .Web import open_web
 import asyncio
 
 class Jus_Bot(Bot):
@@ -27,6 +28,8 @@ class Jus_Bot(Bot):
       pass
 
   def run(self, token):
+    open_web()
+    
     loop = self.loop
     client = PythonShellBot()
 
