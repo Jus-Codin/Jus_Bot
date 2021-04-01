@@ -68,6 +68,10 @@ def run():
   def get_ip():
     return outputter(flask.request.environ['HTTP_X_FORWARDED_FOR'])
 
+  @app.route('/code')
+  def show_code():
+    return """<iframe height="100%" width="100%" src="https://replit.com/@JusCodin/Discord-Bot-Mk3?lite=true" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true" sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-modals"></iframe>"""
+
   @app.route('/<path:unknown>')
   def unknown_command(unknown):
     return outputter(f'Unknown command "{unquote(unknown)}"')
