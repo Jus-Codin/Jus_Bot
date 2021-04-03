@@ -3,7 +3,7 @@ from discord.errors import Forbidden
 from discord.client import _cleanup_loop
 from .pythonshell import PythonShellBot
 from .Web import open_web
-import asyncio
+import asyncio, traceback
 
 class Jus_Bot(Bot):
   '''Main class to bind pythonshell to the same bot'''
@@ -23,7 +23,8 @@ class Jus_Bot(Bot):
       elif isinstance(error, MissingRequiredArgument):
         await ctx.send('Error, missing smthing')
       else:
-        await ctx.send(f'{error}')
+        trace_string = '\n'.join(traceback.format_exception(type(error), error, error.__traceback__))
+        await ctx.send(f'```\n{trace_string}```')
     except Forbidden:
       pass
 
