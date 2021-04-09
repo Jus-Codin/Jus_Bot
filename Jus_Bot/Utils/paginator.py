@@ -119,6 +119,8 @@ class PaginatorInterface:
 
     if not self.page_reactions_sent and self.page_count > 1:
       await self.send_all_reactions()
+    elif self.page_count == 1:
+      self.page_reactions_sent = True
     
     return self
 

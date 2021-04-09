@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from ..Utils import get, WolframClient, PaginatorInterface, Paginator
+from ..Utils import WolframClient, PaginatorInterface, Paginator
 import os
 
 class WebUtils(commands.Cog):
@@ -22,10 +22,15 @@ class WebUtils(commands.Cog):
       assumptions = res.assumptions
       try:
         assumption = next(assumptions)['assumption']
+        if isinstance(assumption, list):
+          assumption = assumption[0]
         text = assumption.get('@template')
         text = text.replace('${desc1}', assumption['value'][0]['@desc'])
         try:
-          text = text.replace('${word}', assumption['@word'])
+          if assumption['@word']:
+            text = text.replace('${word}', assumption['@word'])
+          else:
+            text = text.replace('${word1}', assumption['value'][0]['@word'])
         except Exception:
           pass
         assumption = text[:text.index('. ')+1]
@@ -60,7 +65,9 @@ class WebUtils(commands.Cog):
 
       # Find out why no result is availible
       if val:=res.get('didyoumeans'):
-        embed.add_field(name='Did you mean', value=val['didyoumean']['#text'], inline=False)
+        val = val['didyoumean']
+        val ='\n'.join([v['#text'] for v in val])
+        embed.add_field(name='Did you mean', value=val, inline=False)
       
       elif val:=res.get('tips'):
         embed.add_field(name='Tip', value=val['tip']['@text'], inline=False)
