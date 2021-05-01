@@ -3,7 +3,6 @@ from urllib.parse import unquote
 from threading import Thread
 
 def run():
-  print(__file__)
   app=flask.Flask('', template_folder=__file__.replace('__init__.py', 'templates'))
   client=wolframalpha.Client(os.getenv("APPID"))
 
@@ -79,5 +78,5 @@ def run():
   app.run("0.0.0.0",8080)
 
 def open_web():
-  t = Thread(target=run)
+  t = Thread(target=run, daemon=True)
   t.start()

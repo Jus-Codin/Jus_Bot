@@ -5,6 +5,8 @@ from .pythonshell import PythonShellBot
 from .Web import open_web
 import asyncio, traceback
 
+__version__ = '3.1.5'
+
 class Jus_Bot(Bot):
   '''Main class to bind pythonshell to the same bot'''
 

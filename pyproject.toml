@@ -11,6 +11,7 @@ aiohttp = "^3.7.4"
 discord = "^1.0.1"
 humanize = "^3.3.0"
 wolframalpha = "^4.1.1"
+psutil = "^5.8.0"
 
 [tool.poetry.dev-dependencies]
 

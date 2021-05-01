@@ -3,7 +3,6 @@ A wrapper for the Wolfram|Alpha v2.0 API
 """
 from .aioRequests import get
 from wolframalpha import Result
-import urllib
 
 class WolframClient:
 

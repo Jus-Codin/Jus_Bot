@@ -26,7 +26,7 @@ class PythonShellBot(discord.Client):
       sys.stdout = codeOut
 
       try:
-        code = compile(code, filename='<InlineCode>', mode='exec')
+        code = compile(code, filename='<DiscordCode>', mode='exec')
 
         if message.author.id == 694139031298113556:
           exec(code, {'message':message, 'channel':channel, 'bot':self, 'p':print, 'runCoro':self.loop.create_task})
