@@ -5,8 +5,7 @@ import discord, os
 
 print(strftime('%H:%M:%S', localtime(time())))
 TOKEN = os.getenv('TOKEN')
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 
 def get_prefix(bot, message: discord.Message):
   if message.content[:8].lower() == 'justest ':

@@ -1,7 +1,7 @@
 from discord.ext.commands import Bot, errors, MissingPermissions, MissingRequiredArgument
 from discord.errors import Forbidden
 from discord.client import _cleanup_loop
-from .pythonshell import PythonShellBot
+from .PythonShell.pythonbot import PythonShellBot
 from .Web import open_web
 import asyncio, traceback
 
