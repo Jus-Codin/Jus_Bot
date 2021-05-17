@@ -1,5 +1,5 @@
 from time import strftime, localtime, time
-from Jus_Bot import Jus_Bot
+from Jus_Bot import Jus_Bot, open_web
 
 import discord, os
 
@@ -23,4 +23,5 @@ Extensions = [
 for extension in Extensions:
   bot.load_extension(extension)
 
+open_web()
 bot.run(TOKEN)
