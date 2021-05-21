@@ -41,7 +41,7 @@ class JusBotBase(BotBase):
         return
       
       async with channel.typing():
-        result = python3(code)
+        result = await python3(code)
 
         returncode = result.returncode
 
@@ -51,7 +51,7 @@ class JusBotBase(BotBase):
         if returncode is None:
           msg = 'Your code has failed'
           err = result.stdout.strip()
-        elif returncode == 9:
+        elif returncode == 15:
           msg = 'Your code timed out or ran out of memory'
         elif returncode == 255:
           msg = 'Your code has failed'
@@ -67,8 +67,12 @@ class JusBotBase(BotBase):
           output = err
         else:
           output = result.stdout.strip()
-          output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
-          output = '\n'.join(output)
+          print(output)
+          if output == '':
+            output = 'No output detected'
+          else:
+            output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
+            output = '\n'.join(output)
 
         s = f'{message.author.mention}, {msg}.\n\n```\n{output}\n```'
 
