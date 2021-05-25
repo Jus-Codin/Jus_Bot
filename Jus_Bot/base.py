@@ -1,5 +1,5 @@
 from discord.ext.commands import errors, MissingPermissions, MissingRequiredArgument
-from discord.ext.commands.bot import BotBase, _default
+from discord.ext.commands.bot import BotBase
 from discord.errors import Forbidden
 from .PythonShell.pythonshell import python3
 from signal import Signals
@@ -67,7 +67,6 @@ class JusBotBase(BotBase):
           output = err
         else:
           output = result.stdout.strip()
-          print(output)
           if output == '':
             output = 'No output detected'
           else:

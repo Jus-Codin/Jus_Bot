@@ -40,7 +40,7 @@ async def python3(code: str):
     
   output = ''.join([chunk.decode() for chunk in output])
 
-  returncode = python.returncode if python.returncode else signal.SIGTERM
+  returncode = python.returncode if python.returncode is not None else signal.SIGTERM
 
   return subprocess.CompletedProcess(args, returncode, output, None)
 

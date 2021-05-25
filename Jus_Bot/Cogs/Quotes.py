@@ -1,1 +1,25 @@
-from ..Utils import get
+from discord.ext import commands
+from ..Utils import quotes
+
+class Quotes(commands.Cog):
+
+  def __init__(self, bot):
+    self.bot: commands.Bot = bot
+
+  @commands.command()
+  async def qod(self, ctx, category='inspire'):
+    quote = await quotes.tss_qod(category)
+    await ctx.send(quote)
+
+  @commands.command()
+  async def inspquote(self, ctx):
+    quote = await quotes.forismatic()
+    await ctx.send(quote)
+  
+  @commands.command()
+  async def paperquote(self, ctx, language='en'):
+    quote = await quotes.paper(language)
+    await ctx.send(quote)
+
+def setup(bot):
+  bot.add_cog(Quotes(bot))

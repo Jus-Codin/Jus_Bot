@@ -11,13 +11,14 @@ def get_prefix(bot, message: discord.Message):
   if message.content[:8].lower() == 'justest ':
     return message.content[:8]
   else:
-    return 'JusTest '
+    return discord.ext.commands.when_mentioned(bot, message)
 
 bot = Jus_Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
 
 Extensions = [
   'Jus_Bot.Cogs.Dianogstics',
-  'Jus_Bot.Cogs.WebUtils'
+  'Jus_Bot.Cogs.WebUtils',
+  'Jus_Bot.Cogs.Quotes'
 ]
 
 for extension in Extensions:
