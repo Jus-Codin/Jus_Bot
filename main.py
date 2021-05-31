@@ -15,11 +15,17 @@ def get_prefix(bot, message: discord.Message):
 
 bot = Jus_Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
 
-Extensions = [
-  'Jus_Bot.Cogs.Dianogstics',
-  'Jus_Bot.Cogs.WebUtils',
-  'Jus_Bot.Cogs.Quotes'
-]
+def get_extensions():
+  _, __, file_names = next(os.walk('./Jus_Bot/Cogs/'))
+  list_of_ext = []
+  for name in file_names:
+    name, ext = name.split('.')
+    if ext == 'py':
+      print(name)
+      list_of_ext.append('Jus_Bot.Cogs.' + name)
+  return list_of_ext
+
+Extensions = get_extensions()
 
 for extension in Extensions:
   bot.load_extension(extension)

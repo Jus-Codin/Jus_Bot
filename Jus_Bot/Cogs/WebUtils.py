@@ -66,7 +66,10 @@ class WebUtils(commands.Cog):
       # Find out why no result is availible
       if val:=res.get('didyoumeans'):
         val = val['didyoumean']
-        val ='\n'.join([v['#text'] for v in val])
+        try:
+          val ='\n'.join([v['#text'] for v in val])
+        except TypeError:
+          val = val['#text']
         embed.add_field(name='Did you mean', value=val, inline=False)
       
       elif val:=res.get('tips'):
