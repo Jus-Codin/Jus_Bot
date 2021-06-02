@@ -4,6 +4,7 @@ from Jus_Bot import Jus_Bot, open_web
 import discord, os
 
 print(strftime('%H:%M:%S', localtime(time())))
+
 TOKEN = os.getenv('TOKEN')
 intents = discord.Intents.all()
 

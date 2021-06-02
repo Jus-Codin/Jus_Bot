@@ -6,10 +6,13 @@ from signal import Signals
 import discord
 import traceback
 
-def _pythonPrefix(s: str):
+def _pythonPrefix(s: str, channel: discord.Message.channel=None):
+  if hasattr(channel, 'name'):
+    if channel.name == 'python-shell':
+      return True
   return all((
-    s.startswith('```python\n') or s.startswith('```py\n'),
-    s.endswith('```')
+      s.startswith('```python\n') or s.startswith('```py\n'),
+      s.endswith('```')
   ))
 
 class JusBotBase(BotBase):
@@ -35,7 +38,7 @@ class JusBotBase(BotBase):
     channel = message.channel
     if message.author.bot:
       return
-    elif _pythonPrefix(message.content) or channel.name == 'python-shell':
+    elif _pythonPrefix(message.content, channel):
       code = message.content.replace('```python', '```py', 1)[6:-3] if _pythonPrefix(message.content) else message.content
       if code.startswith('i#'):
         return
