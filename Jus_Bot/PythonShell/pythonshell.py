@@ -11,7 +11,9 @@ async def python3(code: str):
 
   args = (
     sys.executable,
+    '-E',
     '-c',
+    '-I',
     code
   )
 
@@ -43,4 +45,3 @@ async def python3(code: str):
   returncode = python.returncode if python.returncode is not None else signal.SIGTERM
 
   return subprocess.CompletedProcess(args, returncode, output, None)
-
