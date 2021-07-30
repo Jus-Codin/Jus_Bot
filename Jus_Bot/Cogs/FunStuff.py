@@ -1,9 +1,18 @@
 from discord.ext import commands
+from ..PythonShell import replChannel
 import random
+import signal
 class FunStuff(commands.Cog):
 
   def __init__(self, bot):
     self.bot = bot
+
+  @commands.command()
+  async def repl(self, ctx):
+    handler = replChannel(self.bot, ctx)
+    returncode = await handler.start_repl()
+    if returncode == signal.SIGTERM:
+      await ctx.send('The repl timed out or was terminated')
 
   #rng stuff
   @commands.command()
@@ -26,12 +35,9 @@ class FunStuff(commands.Cog):
       try:
         await ctx.send(text.decode(decoder))
         return
-      except:#ha bare except NOOOOOOOOOOOOOOO
+      except:
         pass
     await ctx.send('Did you input in the form (string) (decoder)?')
-
-    
-
 
 
 def setup(bot):

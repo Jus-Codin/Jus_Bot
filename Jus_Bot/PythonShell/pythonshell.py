@@ -12,8 +12,8 @@ async def python3(code: str):
   args = (
     sys.executable,
     '-E',
-    '-c',
     '-I',
+    '-c',
     code
   )
 

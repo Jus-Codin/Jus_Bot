@@ -12,6 +12,11 @@ class Diagnostics(commands.Cog):
   def __init__(self, bot):
     self.bot: commands.Bot = bot
 
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def pyexec(self, ctx, code):
+    exec(code)
+
   @commands.command(help='Check if the bot is ready')
   async def ready(self, ctx):
     await ctx.send('Bot has connected to discord!')

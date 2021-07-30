@@ -13,11 +13,17 @@ class replChannel:
   input_token = token_hex(4)
 
   init_code = f'''
-  def inputBypass(text):
-    return input({input_token} + str(text))
+_input = input
+def inputBypass(text=''):
+  print('{input_token}', end='')
+  return _input(text).rstrip('\\n')
 
-  globals()['input'] = inputBypass
-  '''
+globals()['input'] = inputBypass
+while True:
+  code = inputBypass()
+  print(code)
+  eval(code)
+'''
 
   def __init__(self, bot: commands.Bot, ctx: commands.Context, channel: discord.TextChannel=None, delete_channel=False):
     self.repl: asyncio.subprocess.Process = None
@@ -25,7 +31,7 @@ class replChannel:
     self.ctx = ctx
     self.channel = channel if channel else ctx.channel
     self.delete_channel = delete_channel
-    self.waiting_for_input = False
+    self.waiting_for_input = True
     self.output = None
     self.output_size = 0
 
@@ -33,16 +39,26 @@ class replChannel:
       raise ValueError('Cannot delete channel repl will be created from')
 
   async def read_output(self, process: asyncio.subprocess.Process):
-    chars = await process.stdout.readline()
+    print('Reading line')
+    chars = await process.stdout.read(10000)
+    print('Finished reading')
+    chars = chars.decode()
+    print(chars)
+    print('Token:', self.input_token)
     if self.input_token in chars:
       self.waiting_for_input = True
       chars = chars.replace(self.input_token, '')
     self.output_size += sys.getsizeof(chars)
-    self.output = chars.decode()
+    print(chars)
+    self.output = chars
 
   async def await_input(self, process: asyncio.subprocess.Process):
 
     def check(message: discord.Message):
+      print(message.channel)
+      print(message.author.id)
+      print(self.channel)
+      print('self.ctx.author.id')
       tests = (
         message.channel == self.channel,
         message.author.id == self.ctx.author.id
@@ -51,11 +67,15 @@ class replChannel:
       return all(tests)
       
     if self.waiting_for_input:
-      message = await self.bot.wait_for('on_message', check=check, timeout=30)
-      text = message.content
+      message = await self.bot.wait_for('message', check=check, timeout=30)
+      print('Message found')
+      text = message.content.encode('utf-8')
 
+      print(text)
       process.stdin.write(text)
       await process.stdin.drain()
+
+      self.waiting_for_input = False
 
   async def start_repl(self):
 
@@ -64,8 +84,6 @@ class replChannel:
     args = (
       sys.executable,
       '-E',
-      '-I',
-      '-i',
       '-c',
       self.init_code
     )
@@ -83,15 +101,21 @@ class replChannel:
     while self.repl.returncode is None:
       if self.waiting_for_input:
         try:
+          print('waiting for input')
           await self.await_input(self.repl)
+          print('input sent')
         except asyncio.TimeoutError:
           self.repl.terminate()
           break
       else:
         try:
+          print('reading')
           await asyncio.wait_for(self.read_output(self.repl), TIMEOUT)
+          if self.output:
+            await self.channel.send(self.output)
+          print('reading done')
         except asyncio.TimeoutError:
-          await self.term_repl()
+          self.repl.terminate()
           break
 
         if self.output_size > OUTPUT_MAX:
