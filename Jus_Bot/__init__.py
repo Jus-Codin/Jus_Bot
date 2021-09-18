@@ -2,7 +2,7 @@ from discord import Client
 from .base import JusBotBase
 from .Web import open_web
 
-__version__ = '3.1.6'
+__version__ = '4.0.0'
 __all__ = (
   'Jus_Bot',
   'open_web'
