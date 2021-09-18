@@ -1,7 +1,6 @@
 import collections
 import asyncio
 import discord
-import typing
 
 from discord.ext import commands
 
@@ -19,27 +18,29 @@ class Paginator:
   """
   Class to make pages for discord messages
   """
-  max_size = 1990#Less than actual limit because page numbers are inserted on a new line
+  max_size = 2000
 
-  def __init__(self, pages: typing.List[dict]=[], **kwargs):
+  def __init__(self, pages: list=[], **kwargs):
     if not isinstance(pages, list):
       raise TypeError('pages has to be a list')
     self._check(*pages)
     self._pages = pages
 
-  def _check(self, *pages: typing.Union[typing.List[dict], dict]):
+  def _check(self, *pages):
     for i in range(len(pages)):
-      if content := pages[i].get('content', None):
-        if len(content) > self.max_size:
-          raise TypeError(f'Page {i+1} has too many characters')
+      if isinstance(pages[i], str):
+        if len(pages[i]) > self.max_size:
+          raise ValueError(f'Page {i+1} has more than 2000 characters')
+      if not isinstance(pages[i], (discord.Embed, discord.File, str)):
+        raise TypeError('Page must be an Embed, File, or String')
 
-  def add_page(self, index=-1, **page):
+  def add_page(self, page: str, index=-1):
     """Add a page"""
-    self._check(page)
+    self._check(*page)
     if index == -1:
       self._pages.append(page)
     else:
-      self._pages.insert(index, page)
+      self._pages.insert(index)
   
   def delete_page(self, index: int):
     """Delete a page"""
@@ -58,11 +59,6 @@ class PaginatorInterface:
   """
   Message and reaction based interface for paginators.
   """
-  template = {
-    'content' : None,
-    'embeds'  : [],
-    'view'    : None
-  }
 
   def __init__(self, bot: commands.Bot, paginator: Paginator, **kwargs):
     if not isinstance(paginator, Paginator):
@@ -99,15 +95,17 @@ class PaginatorInterface:
 
   @property
   def send_kwargs(self) -> dict:
-    current_page = dict(self.pages[self.current_page])
+    current_page = self.pages[self.current_page]
     page_num = f'\nPage {self.current_page + 1}/{self.page_count}'
-    if embeds := current_page.get('embeds', None):
-      embeds[-1] = embeds[-1].set_footer(text=page_num[1:])
-      current_page['embeds'] = embeds
-    elif content := current_page.get('content', None) or current_page.get('view', None):
-      content += page_num
-      current_page['content'] = content
-    return self.template | current_page
+    if isinstance(current_page, discord.Embed):
+      embed = current_page.set_footer(text=page_num[1:])
+      return {'embed':embed, 'content':None}
+    elif isinstance(current_page, str):
+      content = current_page + page_num
+      return {'content': content, 'embed':None}
+    elif isinstance(current_page, discord.File):
+      content = page_num[1:]
+      return {'file':current_page, 'content':content, 'embed':None}
 
   async def send_to(self, ctx: commands.Context):
     self.ctx = ctx
