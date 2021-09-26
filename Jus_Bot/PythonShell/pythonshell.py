@@ -9,6 +9,14 @@ TIMEOUT = 10
 
 async def python3(code: str):
 
+  backend = '''
+import sys
+sys.modules['os'] = None
+del sys
+  '''
+
+  code = backend + code
+
   args = (
     sys.executable,
     '-E',

@@ -18,6 +18,10 @@ def _pythonPrefix(s: str, channel: discord.Message.channel=None):
 class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
 
+  def run(self, *args, **kwargs):
+    self.token = args[0]
+    super().run(*args, **kwargs)
+
   async def on_command_error(self, ctx, error):
     try:
       if isinstance(error, errors.CommandNotFound):
@@ -77,6 +81,8 @@ class JusBotBase(BotBase):
             output = '\n'.join(output)
 
         s = f'{message.author.mention}, {msg}.\n\n```\n{output}\n```'
+
+      s.replace(self.token, '#'*len(self.token))
 
       if len(s) < 2001:
         await channel.send(s)
