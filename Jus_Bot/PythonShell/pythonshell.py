@@ -8,11 +8,12 @@ READ_CHUNK_SIZE = 10000
 TIMEOUT = 10
 
 async def python3(code: str):
-
+  
   backend = '''
 import sys
 sys.modules['os'] = None
 del sys
+del __builtins__.open
 '''
 
   code = backend + code
