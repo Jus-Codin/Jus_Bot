@@ -8,10 +8,10 @@ authors = ["Replit user <replituser@example.com>"]
 python = "^3.8"
 wikipedia = "^1.4.0"
 aiohttp = "^3.7.4"
-discord = "^1.0.1"
 humanize = "^3.3.0"
 wolframalpha = "^4.1.1"
 psutil = "^5.8.0"
+discord = {git = "https://github.com/Pycord-Development/pycord"}
 
 [tool.poetry.dev-dependencies]
 
