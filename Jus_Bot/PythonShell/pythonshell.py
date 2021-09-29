@@ -11,7 +11,11 @@ async def python3(code: str):
   
   backend = '''
 import sys
+sys.modules['sys'] = None
 sys.modules['os'] = None
+sys.modules['_io'] = None
+sys.modules['io'] = None
+sys.modules['subprocess'] = None
 del sys
 del __builtins__.open
 '''
