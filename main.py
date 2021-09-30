@@ -9,12 +9,16 @@ TOKEN = os.getenv('TOKEN')
 intents = discord.Intents.all()
 
 def get_prefix(bot, message: discord.Message):
-  if message.content[:8].lower() == 'justest ':
-    return message.content[:8]
+  if message.content[:7].lower() == 'jusdev ':
+    return message.content[:7]
   else:
     return discord.ext.commands.when_mentioned(bot, message)
 
 bot = Jus_Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
+
+@bot.event
+async def on_ready():
+  print('Bot ready')
 
 def get_extensions():
   _, __, file_names = next(os.walk('./Jus_Bot/Cogs/'))

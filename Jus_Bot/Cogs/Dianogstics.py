@@ -34,7 +34,8 @@ class Diagnostics(commands.Cog):
   
   @commands.command()
   async def test(self, ctx):
-    paginator = Paginator(['test1', 'test2', discord.Embed(title='Test', description='This is a test')])
+    
+    paginator = Paginator([{'content':'test1'}, {'content':'test2'}, {'embeds':[discord.Embed(title='Test', description='This is a test')]}])
     interface = PaginatorInterface(self.bot, paginator)
     await interface.send_to(ctx)
 

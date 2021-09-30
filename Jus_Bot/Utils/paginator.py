@@ -107,7 +107,7 @@ class PaginatorInterface:
     elif content := current_page.get('content', None) or current_page.get('view', None):
       content += page_num
       current_page['content'] = content
-    return self.template | current_page
+    return {**self.template, **current_page}
 
   async def send_to(self, ctx: commands.Context):
     self.ctx = ctx

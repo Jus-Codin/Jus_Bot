@@ -53,7 +53,7 @@ class WebUtils(commands.Cog):
           embed.add_field(name='Assumption', value=assumption)
           if warnings:
             embed.add_field(name='Warnings', value='\n'.join(warnings))
-          embeds.append(embed.add_field(name=pod.title, value=pod.text, inline=False))
+          embeds.append({'embeds':[embed.add_field(name=pod.title, value=pod.text, inline=False)]})
     
     else:
       embed = discord.Embed(title='Results from Wolfram|Alpha',
@@ -75,7 +75,7 @@ class WebUtils(commands.Cog):
       elif val:=res.get('tips'):
         embed.add_field(name='Tip', value=val['tip']['@text'], inline=False)
       
-      embeds.append(embed)
+      embeds.append({'embeds':[embed]})
 
     paginator = PaginatorInterface(self.bot, Paginator(pages=embeds))
     await paginator.send_to(ctx)
