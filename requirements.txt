@@ -3,4 +3,4 @@ aiohttp >= 3.7.4
 humanize >= 3.3.0
 wolframalpha == 4.1.1
 psutil >= 5.8.0
-git+https://github.com/Pycord-Development/pycord
+git+https://github.com/Pycord-Development/pycord#egg=py-cord[voice]

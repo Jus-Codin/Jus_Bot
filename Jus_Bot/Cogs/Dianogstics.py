@@ -68,7 +68,7 @@ class Diagnostics(commands.Cog):
   @commands.command()
   async def botinfo(self, ctx):
     message = [
-      f'JusBot v{__version__}, discord.py `{discord.__version__}`',
+      f'JusBot v{__version__}, py-cord `{discord.__version__}`',
       f'Python {sys.version} on {sys.platform}'.replace('\n', '')
     ]
 
