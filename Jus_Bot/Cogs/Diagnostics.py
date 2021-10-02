@@ -11,6 +11,7 @@ class Diagnostics(commands.Cog):
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
+    self.hidden = False
 
   @commands.command(hidden=True)
   @commands.is_owner()

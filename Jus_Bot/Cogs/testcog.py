@@ -5,6 +5,7 @@ class Test(commands.Cog):
 
   def __init__(self, bot):
     self.bot = bot
+    self.hidden = False
 
   @commands.command()
   async def testView(self, ctx):

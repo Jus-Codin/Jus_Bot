@@ -8,6 +8,7 @@ class WebUtils(commands.Cog):
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
+    self.hidden = False
     self.client = WolframClient(os.getenv('APPID'))
 
   @commands.command()

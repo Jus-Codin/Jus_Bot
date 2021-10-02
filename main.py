@@ -16,6 +16,8 @@ def get_prefix(bot, message: discord.Message):
 
 bot = Jus_Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
 
+bot.remove_command('help')
+
 @bot.event
 async def on_ready():
   print('Bot ready')

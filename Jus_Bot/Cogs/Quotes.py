@@ -5,6 +5,7 @@ class Quotes(commands.Cog):
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
+    self.hidden = False
 
   @commands.command()
   async def qod(self, ctx, category='inspire'):

@@ -42,8 +42,6 @@ class JusBotBase(BotBase):
       code = message.content.replace('```python', '```py', 1)[6:-3] if _pythonPrefix(message.content) else message.content
       if code.startswith('i#'):
         return
-      if True:
-        return
       
       async with channel.typing():
         result = await python3(code)

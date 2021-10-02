@@ -5,6 +5,7 @@ class CogManager(commands.Cog):
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
+    self.hidden = True
 
   @commands.command()
   @commands.is_owner()
@@ -24,6 +25,12 @@ class CogManager(commands.Cog):
   async def unload_cog(self, ctx, cog_name):
     name = 'Jus_Bot.Cogs.' + cog_name
     self.bot.unload_extension(name)  
+
+  @commands.command()
+  @commands.is_owner()
+  async def add_cog(self, ctx, cog_name):
+    name = 'Jus_Bot.Cogs.' + cog_name + '.py'
+    self.bot.load_extension(name)
 
 def setup(bot):
   bot.add_cog(CogManager(bot))
