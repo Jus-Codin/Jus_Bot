@@ -18,6 +18,7 @@ sys.modules['io'] = None
 sys.modules['subprocess'] = None
 del sys
 del __builtins__.open
+del __loader__
 '''
 
   code = backend + code

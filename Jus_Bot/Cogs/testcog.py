@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+from ..Utils.paginator import Paginator
+from ..Utils.ui import PaginatorView
 
 class Test(commands.Cog):
 
@@ -19,6 +21,12 @@ class Test(commands.Cog):
           await interaction.response.send_message('Hello', ephemeral=True) # to get the select options, you can use interaction.data
 
     await ctx.send('Test', view=View())
+
+  @commands.command()
+  async def paginView(self, ctx):
+    paginator = Paginator([{'content':'test1'}, {'content':'test2'}, {'embeds':[discord.Embed(title='Test', description='This is a test')]}])
+    view = PaginatorView(paginator)
+    await view.send_to(ctx)
 
 def setup(bot):
   bot.add_cog(Test(bot))

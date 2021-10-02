@@ -102,7 +102,13 @@ class PaginatorInterface:
     current_page = dict(self.pages[self.current_page])
     page_num = f'\nPage {self.current_page + 1}/{self.page_count}'
     if embeds := current_page.get('embeds', None):
-      embeds[-1] = embeds[-1].set_footer(text=page_num[1:])
+      if embeds[-1].footer.text == discord.Embed.Empty:
+        footer = page_num[1:]
+      elif embeds[-1].footer.text.startswith(page_num[1:]):
+        footer = embeds[-1].footer.text
+      else:
+        footer = page_num[1:] + '\n' + embeds[-1].footer.text
+      embeds[-1] = embeds[-1].set_footer(text=footer)
       current_page['embeds'] = embeds
     elif content := current_page.get('content', None) or current_page.get('view', None):
       content += page_num
