@@ -1,17 +1,17 @@
 import discord
 from discord.ext import commands
-from ..Utils import WolframClient, PaginatorInterface, Paginator
+from ..Utils import WolframClient, PaginatorView, Paginator
 import os
 
 class WebUtils(commands.Cog):
-  """Commands to get info from the internet"""
+  """> Commands to get info from the internet"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
     self.hidden = False
     self.client = WolframClient(os.getenv('APPID'))
 
-  @commands.command()
+  @commands.command(help='> Search something up on WolframAlpha')
   async def wolfram(self, ctx, *args):
 
     embeds = []
@@ -78,7 +78,7 @@ class WebUtils(commands.Cog):
       
       embeds.append({'embeds':[embed]})
 
-    paginator = PaginatorInterface(self.bot, Paginator(pages=embeds))
+    paginator = PaginatorView(Paginator(pages=embeds))
     await paginator.send_to(ctx)
 
 def setup(bot):

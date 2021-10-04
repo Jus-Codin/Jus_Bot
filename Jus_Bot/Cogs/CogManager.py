@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 class CogManager(commands.Cog):
-  """Commands to manage bot cogs"""
+  """> Commands to manage bot cogs"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot

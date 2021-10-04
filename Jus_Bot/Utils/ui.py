@@ -4,33 +4,33 @@ from typing import List
 import discord
 
 EMOJI_DEFAULT = {
-  'close' : '\N{BLACK SQUARE FOR STOP}',
-  'start' : '\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}',
+  'close' : '\N{WHITE MEDIUM SQUARE}',
+  'start' : '\N{BLACK LEFT-POINTING DOUBLE TRIANGLE}',
   'back' : '\N{BLACK LEFT-POINTING TRIANGLE}',
   'forward' : '\N{BLACK RIGHT-POINTING TRIANGLE}',
-  'end' : '\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}',
+  'end' : '\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}',
 }
 
-class PaginatorButton(discord.ui.Button['Paginator']):
-  def __init__(self, label: str, **kwargs):
-    super().__init__(style=discord.ButtonStyle.primary, label=label, row=4)
+class _PaginatorButton(discord.ui.Button['Paginator']):
+  def __init__(self, emoji: str, **kwargs):
+    super().__init__(style=discord.ButtonStyle.primary, label=emoji, row=4)
 
   async def callback(self, interaction: discord.Interaction):
-    if interaction.user == self.view.user:
-      close, start, back, forward, end = self.view.emojis.values()
-      if self.label == close:
-        await interaction.delete_original_message()
-        return
-      elif self.label == start:
-        self.view._current_page = 0
-      elif self.label == back:
-        self.view._current_page -= 1
-      elif self.label == forward:
-        self.view._current_page += 1
-      elif self.label == end:
-        self.view._current_page = self.view.page_count - 1
+    close, start, back, forward, end = self.view.emojis.values()
+    if self.label == close:
+      await interaction.message.delete()
+      self.view.stop()
+      return
+    elif self.label == start:
+      self.view._current_page = 0
+    elif self.label == back:
+      self.view._current_page -= 1
+    elif self.label == forward:
+      self.view._current_page += 1
+    elif self.label == end:
+      self.view._current_page = self.view.page_count - 1
 
-      await interaction.response.edit_message(**self.view.send_kwargs)
+    await interaction.response.edit_message(**self.view.send_kwargs)
 
 
 class PaginatorView(discord.ui.View):
@@ -45,15 +45,31 @@ class PaginatorView(discord.ui.View):
     
     self.emojis = kwargs.pop('emojis', EMOJI_DEFAULT)
     self.delete_message = kwargs.pop('delete_message', False)
+    self.timeout = kwargs.pop('timeout', 60.0)
 
-    for emoji in self.emojis.values():
-      self.add_item(PaginatorButton(emoji))
+    if len(self.paginator._pages) > 1:
+      for emoji in self.emojis.values():
+        self.add_item(_PaginatorButton(emoji))
+    else:
+      self.add_item(_PaginatorButton(self.emojis['close']))
 
     self.template = {
       'content' : None,
       'embeds'  : [],
       'view'    : self
     }
+
+  async def interaction_check(self, interaction: discord.Interaction):
+    return self.user == interaction.user
+
+  async def on_timeout(self):
+    if self.delete_message:
+      await self.message.delete()
+    else:
+      for child in self.children:
+        child.disabled = True
+      await self.message.edit(view=self)
+    self.stop()
 
   @property
   def pages(self):
@@ -83,7 +99,7 @@ class PaginatorView(discord.ui.View):
       embeds[-1] = embeds[-1].set_footer(text=footer)
       current_page['embeds'] = embeds
       if not current_page.get('content', None):
-        current_page['content'] = 'Paginator'
+        current_page['content'] = self.user.mention
     elif content := current_page.get('content', None) or current_page.get('view', None):
       content += page_num
       current_page['content'] = content
@@ -94,4 +110,4 @@ class PaginatorView(discord.ui.View):
 
   async def send_to(self, ctx):
     self.user = ctx.author
-    await ctx.send(**self.send_kwargs)
+    self.message = await ctx.send(**self.send_kwargs)

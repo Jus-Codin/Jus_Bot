@@ -1,15 +1,15 @@
 import discord
 from discord.ext import commands
-from ..Utils.paginator import Paginator, PaginatorInterface
+from ..Utils import Paginator, PaginatorView
 
 class Utils(commands.Cog):
-  """Contains commands for more info on commands"""
+  """> Contains commands for more info on commands"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
     self.hidden = False
 
-  @commands.command()
+  @commands.command(help='> Gives you help for a command or catergory')
   async def help(self, ctx, arg=None):
     embeds = []
     main_embed = discord.Embed(title='List of Command Catergories')
@@ -56,12 +56,12 @@ class Utils(commands.Cog):
       embed = discord.Embed()
       embed.set_author(name="Jus_Bot", icon_url=self.bot.user.display_avatar.url)
       embed.set_footer(text=footer)
-      embed.title, embed.description, embed.colour = 'Error!', f'How do you even use "{arg}"?', discord.Color.red()
+      embed.title, embed.description, embed.colour = '> Error!', f'How do you even use "{arg}"?', discord.Color.red()
 
       embeds = [{'embeds':[embed]}]
 
     paginator = Paginator(embeds)
-    await PaginatorInterface(self.bot, paginator).send_to(ctx)
+    await PaginatorView(paginator).send_to(ctx)
 
 def setup(bot):
   bot.add_cog(Utils(bot)) 

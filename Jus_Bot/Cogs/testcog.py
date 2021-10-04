@@ -1,15 +1,15 @@
 import discord
 from discord.ext import commands
-from ..Utils.paginator import Paginator
-from ..Utils.ui import PaginatorView
+from ..Utils import Paginator, PaginatorView
 
-class Test(commands.Cog):
+class TestCog(commands.Cog):
+  """> This is where all test commands go"""
 
   def __init__(self, bot):
     self.bot = bot
     self.hidden = False
 
-  @commands.command()
+  @commands.command(help='> Why are you reading this...')
   async def testView(self, ctx):
 
     class View(discord.ui.View):
@@ -22,11 +22,11 @@ class Test(commands.Cog):
 
     await ctx.send('Test', view=View())
 
-  @commands.command()
+  @commands.command(help='> Don\'t read this')
   async def paginView(self, ctx):
     paginator = Paginator([{'content':'test1'}, {'content':'test2'}, {'embeds':[discord.Embed(title='Test', description='This is a test')]}])
     view = PaginatorView(paginator)
     await view.send_to(ctx)
 
 def setup(bot):
-  bot.add_cog(Test(bot))
+  bot.add_cog(TestCog(bot))

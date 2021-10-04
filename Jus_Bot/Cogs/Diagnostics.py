@@ -7,7 +7,7 @@ from ..Utils import Paginator, PaginatorInterface, get
 from ..__init__ import __version__
 
 class Diagnostics(commands.Cog):
-  """Commands to get info about the bot"""
+  """> Commands to get info about the bot"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
@@ -18,7 +18,7 @@ class Diagnostics(commands.Cog):
   async def pyexec(self, ctx, code):
     exec(code)
 
-  @commands.command(help='Check if the bot is ready')
+  @commands.command(help='> Check if the bot is ready')
   async def ready(self, ctx):
     await ctx.send('Bot has connected to discord!')
 
@@ -26,28 +26,28 @@ class Diagnostics(commands.Cog):
   @commands.is_owner()
   async def kill(self, ctx):
     await ctx.send('Bot dead')
-    await self.bot.logout()
+    await self.bot.close()
     self.bot.loop.close()
 
-  @commands.command(help='Get the websocket latency')
+  @commands.command(help='> Get the websocket latency')
   async def ping(self, ctx):
     await ctx.send(f'Pong! {round(self.bot.latency*1000,1)}ms')
   
-  @commands.command()
+  @commands.command(help='> IDK what to put here lol')
   async def test(self, ctx):
     
     paginator = Paginator([{'content':'test1'}, {'content':'test2'}, {'embeds':[discord.Embed(title='Test', description='This is a test')]}])
     interface = PaginatorInterface(self.bot, paginator)
     await interface.send_to(ctx)
 
-  @commands.command()
+  @commands.command(help='> Send a http request to a url')
   async def rtest(self, ctx, url):
     async def returner(result):
       return result.status, await result.text()
     r = await get(url, returner)
     await ctx.send('\n'.join(map(str, (f'Response from {url}:', *r))))
 
-  @commands.command()
+  @commands.command(help='> Get info about the bot')
   async def botinfo(self, ctx):
     message = [
       f'JusBot v{__version__}, py-cord `{discord.__version__}`',

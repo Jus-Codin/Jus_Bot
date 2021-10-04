@@ -30,7 +30,7 @@ def get_extensions():
     if ext == 'py':
       print(name)
       list_of_ext.append('Jus_Bot.Cogs.' + name)
-  return list_of_ext
+  return sorted(list_of_ext)
 
 Extensions = get_extensions()
 
