@@ -60,7 +60,11 @@ class PaginatorView(discord.ui.View):
     }
 
   async def interaction_check(self, interaction: discord.Interaction):
-    return self.user == interaction.user
+    if self.user == interaction.user:
+      return True
+    else:
+      await interaction.response.send_message('This is not for you!', ephemeral=True)
+      return False
 
   async def on_timeout(self):
     if self.delete_message:
