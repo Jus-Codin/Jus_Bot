@@ -15,8 +15,8 @@ class WebUtils(commands.Cog):
   async def wolfram(self, ctx, *args):
 
     embeds = []
-
-    res = await self.client.query(' '.join(args))
+    async with ctx.typing(): 
+      res = await self.client.query(' '.join(args))
     if res['@success'] == 'true':
 
       # Get assumption, if any

@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from ..Utils import Paginator, PaginatorView
 
 class Utils(commands.Cog):
@@ -8,6 +8,19 @@ class Utils(commands.Cog):
   def __init__(self, bot):
     self.bot: commands.Bot = bot
     self.hidden = False
+    self.update_presence.start()
+
+  def cog_unload(self):
+    self.update_presence.cancel()
+
+  @tasks.loop(minutes=5)
+  async def update_presence(self):
+    activity = discord.Game(name='with the API | Jusdev help')
+    await self.bot.change_presence(activity=activity)
+
+  @update_presence.before_loop
+  async def checker(self):
+    await self.bot.wait_until_ready()
 
   @commands.command(help='> Gives you help for a command or catergory')
   async def help(self, ctx, arg=None):
