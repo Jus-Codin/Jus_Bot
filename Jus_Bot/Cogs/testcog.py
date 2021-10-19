@@ -8,6 +8,7 @@ class TestCog(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
     self.hidden = False
+    self.suppress = False
 
   @commands.command(help='> Why are you reading this...')
   async def testView(self, ctx):

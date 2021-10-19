@@ -1,0 +1,35 @@
+{
+  "Default" : [
+    "Error!",
+    "D'Oh",
+    "Oops?",
+    "Uh oh...",
+    "What did you do...",
+    "Reebe!",
+    "01000101 01110010 01110010 01101111 01110010 00100001",
+    "RXJyb3Ih",
+    "VWggb2guLi4=",
+    "Better luck next time",
+    "why",
+    "Noooooooo",
+    "Have you tried turning it off and on again?",
+    "Pls no"
+  ],
+  "NotFound" : [
+    "What even is that?!",
+    "UNKNOWN COMMAND",
+    "Maybe it works on Alexa...",
+    "Maybe try suggesting it?",
+    "Nice typing",
+    "Idk tho",
+    "This ain't Google btw"
+  ],
+  "BadPerms" : [
+    "Nice try",
+    "Haha NOO!",
+    "Sike you thought",
+    "Worth a try I guess",
+    "E for Effort",
+    "Cry about it"
+  ]
+}

@@ -10,6 +10,7 @@ class Quotes(commands.Cog):
   def __init__(self, bot):
     self.bot: commands.Bot = bot
     self.hidden = False
+    self.suppress = False
 #    self.last_qod_update = None
 #    self.update_qod.start()
   

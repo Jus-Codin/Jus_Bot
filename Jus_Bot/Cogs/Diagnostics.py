@@ -3,7 +3,7 @@ import psutil
 import sys
 import discord
 from discord.ext import commands
-from ..Utils import Paginator, PaginatorInterface, get
+from ..Utils import Paginator, PaginatorInterface, get, embed_template
 from ..__init__ import __version__
 
 class Diagnostics(commands.Cog):
@@ -12,6 +12,7 @@ class Diagnostics(commands.Cog):
   def __init__(self, bot):
     self.bot: commands.Bot = bot
     self.hidden = False
+    self.suppress = False
 
   @commands.command(hidden=True)
   @commands.is_owner()
@@ -31,21 +32,8 @@ class Diagnostics(commands.Cog):
 
   @commands.command(help='> Get the websocket latency')
   async def ping(self, ctx):
-    await ctx.send(f'Pong! {round(self.bot.latency*1000,1)}ms')
-  
-  @commands.command(help='> IDK what to put here lol')
-  async def test(self, ctx):
-    
-    paginator = Paginator([{'content':'test1'}, {'content':'test2'}, {'embeds':[discord.Embed(title='Test', description='This is a test')]}])
-    interface = PaginatorInterface(self.bot, paginator)
-    await interface.send_to(ctx)
-
-  @commands.command(help='> Send a http request to a url')
-  async def rtest(self, ctx, url):
-    async def returner(result):
-      return result.status, await result.text()
-    r = await get(url, returner)
-    await ctx.send('\n'.join(map(str, (f'Response from {url}:', *r))))
+    embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
+    await ctx.send(embed=embed)
 
   @commands.command(help='> Get info about the bot')
   async def botinfo(self, ctx):

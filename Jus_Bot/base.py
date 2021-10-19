@@ -1,10 +1,8 @@
-from discord.ext.commands import errors, MissingPermissions, MissingRequiredArgument
 from discord.ext.commands.bot import BotBase
-from discord.errors import Forbidden
 from .PythonShell.pythonshell import python3
+from .Utils import error_handler
 from signal import Signals
 import discord
-import traceback
 
 def _pythonPrefix(s: str, channel: discord.Message.channel=None):
   if hasattr(channel, 'name'):
@@ -17,22 +15,32 @@ def _pythonPrefix(s: str, channel: discord.Message.channel=None):
 
 class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
+  suppress = False
 
   async def on_command_error(self, ctx, error):
-    try:
-      if isinstance(error, errors.CommandNotFound):
-        await ctx.send("Error, cOmMaNd DoEsN't ExIsT")
-      elif isinstance(error, MissingPermissions):
-        await ctx.send('Error, your permissions are far inferior for this command')
-      elif isinstance(error, errors.NotOwner):
-        await ctx.send('Error, only the owner of the bot can run this command')
-      elif isinstance(error, MissingRequiredArgument):
-        await ctx.send('Error, missing smthing')
+
+    if self.suppress:
+      suppress = True
+    elif ctx.cog:
+      if ctx.cog.suppress:
+        suppress = True
+      elif ctx.cog.has_error_handler():
+        return
       else:
-        trace_string = '\n'.join(traceback.format_exception(type(error), error, error.__traceback__))
-        await ctx.send(f'```\n{trace_string}```')
-    except Forbidden:
-      pass
+        suppress = False
+    else:
+      suppress = False
+
+    if suppress:
+      s = 'globally' if self.suppress else 'for this command\'s cog'
+      await ctx.send('Command raised an exception, but error suppression is enabled '+s)
+      return
+
+    if ctx.command:
+      if ctx.command.has_error_handler():
+        return
+
+    await error_handler(ctx, error)
 
   async def on_message(self, message: discord.Message):
     channel = message.channel
