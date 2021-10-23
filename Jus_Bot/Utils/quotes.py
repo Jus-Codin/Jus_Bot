@@ -1,9 +1,32 @@
 from .aioRequests import get
 import os
 
-async def tss_qod(category):
-  url = f'https://QuotesApi.juscodin.repl.co/get_qod/{category}'
-  return await get(url)
+class qodError(Exception):
+  pass
+
+async def json_handler(result):
+  return await result.json()
+
+async def tss_qod():
+  quotes = {
+    'inspire' : None,
+    'management' : None,
+    'sports' : None,
+    'life' : None,
+    'funny' : None,
+    'love' : None,
+    'art' : None,
+    'students' : None
+  }
+  for i in quotes.keys():
+    print(i)
+    url = f'https://quotes.rest/qod?catergory={i}&language=en'
+    r = await get(url, method=json_handler, headers={'content_type':'application.json'})
+    if r.get('error', None) is not None:
+      raise qodError
+    quotes[i] = r['contents']['quotes'][0]
+  print(quotes)
+  return quotes
 
 async def forismatic():
   url = 'https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en'

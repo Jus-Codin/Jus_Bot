@@ -1,10 +1,8 @@
-from discord.ext.commands import errors, MissingPermissions, MissingRequiredArgument
 from discord.ext.commands.bot import BotBase
-from discord.errors import Forbidden
 from .PythonShell.pythonshell import python3
-from signal import Signals
+from .Utils import error_handler
 import discord
-import traceback
+import re
 
 def _pythonPrefix(s: str, channel: discord.Message.channel=None):
   if hasattr(channel, 'name'):
@@ -17,77 +15,44 @@ def _pythonPrefix(s: str, channel: discord.Message.channel=None):
 
 class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
+  suppress = False
 
   def run(self, *args, **kwargs):
     self.token = args[0]
     super().run(*args, **kwargs)
 
   async def on_command_error(self, ctx, error):
-    try:
-      if isinstance(error, errors.CommandNotFound):
-        await ctx.send("Error, cOmMaNd DoEsN't ExIsT")
-      elif isinstance(error, MissingPermissions):
-        await ctx.send('Error, your permissions are far inferior for this command')
-      elif isinstance(error, errors.NotOwner):
-        await ctx.send('Error, only the owner of the bot can run this command')
-      elif isinstance(error, MissingRequiredArgument):
-        await ctx.send('Error, missing smthing')
+
+    if self.suppress:
+      suppress = True
+    elif ctx.cog:
+      if ctx.cog.suppress:
+        suppress = True
+      elif ctx.cog.has_error_handler():
+        return
       else:
-        trace_string = '\n'.join(traceback.format_exception(type(error), error, error.__traceback__))
-        await ctx.send(f'```\n{trace_string}```')
-    except Forbidden:
-      pass
+        suppress = False
+    else:
+      suppress = False
+
+    if ctx.command:
+      if ctx.command.has_error_handler():
+        return
+
+    await error_handler(ctx, error, suppress=suppress)
 
   async def on_message(self, message: discord.Message):
     channel = message.channel
     if message.author.bot:
       return
     elif _pythonPrefix(message.content, channel):
-      code = message.content.replace('```python', '```py', 1)[6:-3] if _pythonPrefix(message.content) else message.content
+      code = re.sub("```python|```py|```", "", message.content).strip()
       if code.startswith('i#'):
         return
       
       async with channel.typing():
-        result = await python3(code)
+        s = await python3(code, message.author.mention)
 
-        returncode = result.returncode
-
-        msg = f'Your code has finished running with return code {returncode}'
-        err = ''
-
-        if returncode is None:
-          msg = 'Your code has failed'
-          err = result.stdout.strip()
-        elif returncode == 15:
-          msg = 'Your code timed out or ran out of memory'
-        elif returncode == 255:
-          msg = 'Your code has failed'
-          err = 'A fatal error has occurred'
-        else:
-          try:
-            name = Signals(returncode).name
-            msg = f'{msg} ({name})'
-          except ValueError:
-            pass
-
-        if err:
-          output = err
-        else:
-          output = result.stdout.strip()
-          if output == '':
-            output = 'No output detected'
-          else:
-            output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
-            output = '\n'.join(output)
-
-        s = f'{message.author.mention}, {msg}.\n\n```\n{output}\n```'
-
-      s.replace(self.token, '#'*len(self.token))
-
-      if len(s) < 2001:
-        await channel.send(s)
-      else:
-        output = 'Output too large to send'
-        await channel.send(f'{message.author.mention}, {msg}.\n\n```\n{output}\n```')
+      await channel.send(s)
     else:
       await self.process_commands(message)

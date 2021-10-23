@@ -7,7 +7,7 @@ OUTPUT_MAX = 1000000
 READ_CHUNK_SIZE = 10000
 TIMEOUT = 10
 
-async def python3(code: str):
+async def python3(code: str, mention: str):
   
   backend = '''
 import sys
@@ -18,6 +18,7 @@ sys.modules['io'] = None
 sys.modules['subprocess'] = None
 del sys
 del __builtins__.open
+del __loader__
 '''
 
   code = backend + code
@@ -57,4 +58,41 @@ del __builtins__.open
 
   returncode = python.returncode if python.returncode is not None else signal.SIGTERM
 
-  return subprocess.CompletedProcess(args, returncode, output, None)
+  result = subprocess.CompletedProcess(args, returncode, output, None)
+
+  returncode = result.returncode
+
+  msg = f'Your code has finished running with return code {returncode}'
+  err = ''
+
+  if returncode is None:
+    msg = 'Your code has failed'
+    err = result.stdout.strip()
+  elif returncode == 15:
+    msg = 'Your code timed out or ran out of memory'
+  elif returncode == 255:
+    msg = 'Your code has failed'
+    err = 'A fatal error has occurred'
+  else:
+    try:
+      name = signal.Signals(returncode).name
+      msg = f'{msg} ({name})'
+    except ValueError:
+      pass
+
+  if err:
+    output = err
+  else:
+    output = result.stdout.strip()
+    if output == '':
+      output = 'No output detected'
+    else:
+      output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
+      output = '\n'.join(output)
+
+  s = f'{mention}, {msg}.\n\n```\n{output}\n```'
+  if len(s) > 2000:
+    output = 'Output too large to send'
+    s = f'{mention}, {msg}.\n\n```\n{output}\n```'
+
+  return s

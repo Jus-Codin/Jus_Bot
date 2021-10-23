@@ -1,2 +1,6 @@
 language = "python3"
-run = "python main.py"
+run = "pip install -r requirements.txt && python main.py"
+onBoot = "pip install -r requirements.txt"
+
+[packager]
+ignoredPackages = ["discord"]

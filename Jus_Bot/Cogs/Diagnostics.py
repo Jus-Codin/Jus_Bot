@@ -3,21 +3,23 @@ import psutil
 import sys
 import discord
 from discord.ext import commands
-from ..Utils import Paginator, PaginatorInterface, get
+from ..Utils import embed_template
 from ..__init__ import __version__
 
 class Diagnostics(commands.Cog):
-  """Commands to get info about the bot"""
+  """> Commands to get info about the bot"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
+    self.hidden = False
+    self.suppress = False
 
   @commands.command(hidden=True)
   @commands.is_owner()
   async def pyexec(self, ctx, code):
     exec(code)
 
-  @commands.command(help='Check if the bot is ready')
+  @commands.command(help='> Check if the bot is ready')
   async def ready(self, ctx):
     await ctx.send('Bot has connected to discord!')
 
@@ -25,49 +27,18 @@ class Diagnostics(commands.Cog):
   @commands.is_owner()
   async def kill(self, ctx):
     await ctx.send('Bot dead')
-    await self.bot.logout()
+    await self.bot.close()
     self.bot.loop.close()
 
-  @commands.command(help='Get the websocket latency')
+  @commands.command(help='> Get the websocket latency')
   async def ping(self, ctx):
-    await ctx.send(f'Pong! {round(self.bot.latency*1000,1)}ms')
-  
-  @commands.command()
-  async def test(self, ctx):
-    paginator = Paginator(['test1', 'test2', discord.Embed(title='Test', description='This is a test')])
-    interface = PaginatorInterface(self.bot, paginator)
-    await interface.send_to(ctx)
+    embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
+    await ctx.send(embed=embed)
 
-  @commands.command()
-  async def rtest(self, ctx, url):
-    async def returner(result):
-      return result.status, await result.text()
-    r = await get(url, returner)
-    await ctx.send('\n'.join(map(str, (f'Response from {url}:', *r))))
-
-  @commands.command()
-  @commands.is_owner()
-  async def reload_cog(self, ctx, cog_name):
-    name = 'Jus_Bot.Cogs.' + cog_name
-    self.bot.reload_extension(name)
-    await ctx.send('Extension successfully reloaded')
-  
-  @commands.command()
-  @commands.is_owner()
-  async def load_cog(self, ctx, cog_name):
-    name = 'Jus_Bot.Cogs.' + cog_name
-    self.bot.load_extension(name)
-
-  @commands.command()
-  @commands.is_owner()
-  async def unload_cog(self, ctx, cog_name):
-    name = 'Jus_Bot.Cogs.' + cog_name
-    self.bot.unload_extension(name)
-
-  @commands.command()
+  @commands.command(help='> Get info about the bot')
   async def botinfo(self, ctx):
     message = [
-      f'JusBot v{__version__}, discord.py `{discord.__version__}`',
+      f'JusBot v{__version__}, py-cord `{discord.__version__}`',
       f'Python {sys.version} on {sys.platform}'.replace('\n', '')
     ]
 
