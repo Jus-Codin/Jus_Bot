@@ -1,8 +1,8 @@
 from discord.ext.commands.bot import BotBase
 from .PythonShell.pythonshell import python3
 from .Utils import error_handler
-from signal import Signals
 import discord
+import re
 
 def _pythonPrefix(s: str, channel: discord.Message.channel=None):
   if hasattr(channel, 'name'):
@@ -31,65 +31,24 @@ class JusBotBase(BotBase):
     else:
       suppress = False
 
-    if suppress:
-      s = 'globally' if self.suppress else 'for this command\'s cog'
-      await ctx.send('Command raised an exception, but error suppression is enabled '+s)
-      return
-
     if ctx.command:
       if ctx.command.has_error_handler():
         return
 
-    await error_handler(ctx, error)
+    await error_handler(ctx, error, suppress=suppress)
 
   async def on_message(self, message: discord.Message):
     channel = message.channel
     if message.author.bot:
       return
     elif _pythonPrefix(message.content, channel):
-      code = message.content.replace('```python', '```py', 1)[6:-3] if _pythonPrefix(message.content) else message.content
+      code = re.sub("```python|```py|```", "", message.content).strip()
       if code.startswith('i#'):
         return
       
       async with channel.typing():
-        result = await python3(code)
+        s = await python3(code, message.author.mention)
 
-        returncode = result.returncode
-
-        msg = f'Your code has finished running with return code {returncode}'
-        err = ''
-
-        if returncode is None:
-          msg = 'Your code has failed'
-          err = result.stdout.strip()
-        elif returncode == 15:
-          msg = 'Your code timed out or ran out of memory'
-        elif returncode == 255:
-          msg = 'Your code has failed'
-          err = 'A fatal error has occurred'
-        else:
-          try:
-            name = Signals(returncode).name
-            msg = f'{msg} ({name})'
-          except ValueError:
-            pass
-
-        if err:
-          output = err
-        else:
-          output = result.stdout.strip()
-          if output == '':
-            output = 'No output detected'
-          else:
-            output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
-            output = '\n'.join(output)
-
-        s = f'{message.author.mention}, {msg}.\n\n```\n{output}\n```'
-
-      if len(s) < 2001:
-        await channel.send(s)
-      else:
-        output = 'Output too large to send'
-        await channel.send(f'{message.author.mention}, {msg}.\n\n```\n{output}\n```')
+      await channel.send(s)
     else:
       await self.process_commands(message)

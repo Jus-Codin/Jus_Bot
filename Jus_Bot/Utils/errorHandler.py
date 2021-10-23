@@ -4,7 +4,7 @@ from .templates import embed_template, error_template
 import discord
 import traceback
 
-async def error_handler(ctx: commands.Context, error):
+async def error_handler(ctx: commands.Context, error, suppress=False):
   try:
     if isinstance(error, commands.MissingRequiredArgument):
       if not ctx.command.hidden and not ctx.cog.hidden:
@@ -15,7 +15,7 @@ async def error_handler(ctx: commands.Context, error):
           aliases = '\n'.join(ctx.command.aliases)
         else:
           aliases = 'None'
-        embed.add_field(name='Aliases', value=f'```{aliases}```', inline=False)
+        embed.add_field(name='Aliases', value=f'```\n{aliases}```', inline=False)
 
         preview = f'```Jusdev {ctx.command.name} {ctx.command.signature}```'
         embed.add_field(name='Usage', value=preview)
@@ -35,14 +35,21 @@ async def error_handler(ctx: commands.Context, error):
       elif isinstance(error, commands.errors.NotOwner):
         embed = error_template(ctx, type='BadPerms')
         message = '```Only the owner of the bot can run this command```'
+      elif isinstance(error, commands.errors.NoPrivateMessage):
+        embed = error_template(ctx)
+        message = '```This command can only be run in Servers!```'
       else:
         embed = error_template(ctx)
         trace_string = '\n'.join(traceback.format_exception(type(error), error,   error.__traceback__))
-        if len(trace_string) <= 4089:
+        if suppress:
+          print(trace_string)
+          message = '```Command raised an exception, but error suppression is enabled```'
+        elif len(trace_string) <= 4089:
           message = f'```\n{trace_string}```'
         else:
           message = '```Traceback too large to send, printed in console instead```'
           print(trace_string)
+      
       embed.description = message
       await ctx.send(embed=embed)
   except discord.errors.Forbidden:

@@ -1,4 +1,4 @@
-from discord import Client
+from discord import Bot
 from .base import JusBotBase
 from .Web import open_web
 
@@ -8,7 +8,7 @@ __all__ = (
   'open_web'
 )
 
-class Jus_Bot(JusBotBase, Client):
+class Jus_Bot(JusBotBase, Bot):
   '''Main bot with modified BotBase'''
 
   pass

@@ -1,9 +1,10 @@
 import discord
+from discord.commands import SlashCommand
 from discord.ext import commands, tasks
 from ..Utils import Paginator, PaginatorView, embed_template
 
 class Utils(commands.Cog):
-  """> Contains commands for more info on commands"""
+  """> Contains helpful commands"""
 
   def __init__(self, bot):
     self.bot: commands.Bot = bot
@@ -46,7 +47,7 @@ class Utils(commands.Cog):
           embed.title, embed.description = f'{i} Command Listing', self.bot.cogs[i].__doc__
 
         for command in self.bot.cogs.get(i).walk_commands():
-          if not command.hidden:
+          if not isinstance(command, SlashCommand) and not command.hidden:
             if cog_found == i or not arg:
               embed.add_field(name=command.name, value=command.help, inline=True)
             elif command.name.lower() == arg.lower():
@@ -57,7 +58,7 @@ class Utils(commands.Cog):
                 aliases = '\n'.join(command.aliases)
               else:
                 aliases = 'None'
-              embed.add_field(name='Aliases', value=f'```{aliases}```', inline=False)
+              embed.add_field(name='Aliases', value=f'```\n{aliases}```', inline=False)
 
               preview = f'```Jusdev {command.name} {command.signature}```'
               embed.add_field(name='Usage', value=preview)
@@ -82,61 +83,6 @@ class Utils(commands.Cog):
 
     paginator = Paginator(embeds)
     await PaginatorView(paginator).send_to(ctx)
-  
-  @commands.command(help='> Sends info about the server you are in')
-  @commands.guild_only()
-  async def server(self, ctx):
-    guild: discord.Guild = ctx.guild
-    prefix = '> '
-
-    name = guild.name
-    desc = prefix + guild.description if guild.description else discord.Embed.Empty
-    icon = guild.icon.url
-    created = guild.created_at
-
-    owner = prefix + str(guild.owner)
-
-    region = prefix + str(guild.region).replace('-', ' ').title().title()
-
-    guild_id = prefix + str(guild.id)
-
-    verify_lvl = prefix + str(guild.verification_level).capitalize()
-
-    nitro_tier = prefix + str(guild.premium_tier)
-    boosts = prefix + str(guild.premium_subscription_count)
-    boosters = prefix + str(len(guild.premium_subscribers))
-
-    channels = prefix + str(len(guild.channels))
-    threads = prefix + str(len(guild.threads))
-    active_threads = prefix + str(len(await guild.active_threads()))
-    voice_channels = prefix + str(len(guild.voice_channels))
-    stages = prefix + str(len(guild.stage_channels))
-    text_channels = prefix + str(len(guild.text_channels))
-
-    roles = prefix + str(len(guild.roles))
-
-    members = prefix + str(guild.member_count)
-
-    embed = embed_template(ctx, title=name, description=desc, timestamp=created
-    ).set_thumbnail(url=icon
-    ).set_footer(text='Server created at'
-    ).add_field(name='Server Owner', value=owner, inline=False
-    ).add_field(name='Guild ID', value=guild_id
-    ).add_field(name='Server Region', value=region
-    ).add_field(name='Total Channels', value=channels
-    ).add_field(name='Roles', value=roles
-    ).add_field(name='Total Members', value=members
-    ).add_field(name='Verification Level', value=verify_lvl
-    ).add_field(name='Server Nitro Tier', value=nitro_tier
-    ).add_field(name='Boosts', value=boosts
-    ).add_field(name='Boosters', value=boosters
-    ).add_field(name='Text Channels', value=text_channels
-    ).add_field(name='Threads', value=threads
-    ).add_field(name='Active Threads', value=active_threads
-    ).add_field(name='Stages', value=stages
-    ).add_field(name='Voice Channels', value=voice_channels)
-
-    await ctx.send(embed=embed)
 
 def setup(bot):
   bot.add_cog(Utils(bot)) 

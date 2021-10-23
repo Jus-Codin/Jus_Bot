@@ -3,7 +3,7 @@ import psutil
 import sys
 import discord
 from discord.ext import commands
-from ..Utils import Paginator, PaginatorInterface, get, embed_template
+from ..Utils import embed_template
 from ..__init__ import __version__
 
 class Diagnostics(commands.Cog):
