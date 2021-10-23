@@ -17,7 +17,7 @@ async def error_handler(ctx: commands.Context, error, suppress=False):
           aliases = 'None'
         embed.add_field(name='Aliases', value=f'```\n{aliases}```', inline=False)
 
-        preview = f'```Jusdev {ctx.command.name} {ctx.command.signature}```'
+        preview = f'```Jus {ctx.command.name} {ctx.command.signature}```'
         embed.add_field(name='Usage', value=preview)
 
         await ctx.send(embed=embed)
