@@ -17,6 +17,10 @@ class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
   suppress = False
 
+  def run(self, *args, **kwargs):
+    self.token = args[0]
+    super().run(*args, **kwargs)
+
   async def on_command_error(self, ctx, error):
 
     if self.suppress:
