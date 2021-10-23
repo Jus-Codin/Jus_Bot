@@ -31,7 +31,7 @@ class Paginator:
       if isinstance(pages[i], str):
         if len(pages[i]) > self.max_size:
           raise ValueError(f'Page {i+1} has more than 2000 characters')
-      if not isinstance(pages[i], (discord.Embed, discord.File, str)):
+      if not isinstance(pages[i], dict):
         raise TypeError('Page must be an Embed, File, or String')
 
   def add_page(self, page: str, index=-1):
