@@ -157,7 +157,7 @@ class WebUtils(commands.Cog):
     embed.add_field(name='Minimum Temperature', value=f'{temp_min}°C')
     embed.add_field(name='Maximum Temperature', value=f'{temp_max}°C')
 
-    await ctx.send(embed=embed)
+    await ctx.reply(embed=embed)
   
   @weather.error
   async def handler(self, ctx, error):
@@ -165,10 +165,10 @@ class WebUtils(commands.Cog):
       error = error.original
       if isinstance(error, InvalidCity):
         embed = error_template(ctx, description='Could not find the requested city.')
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
       elif isinstance(error, InvalidCountry):
-        embed = error_template(ctx, description='Could not fine the requested country.')
-        await ctx.send(embed=embed)
+        embed = error_template(ctx, description='Could not find the requested country.')
+        await ctx.reply(embed=embed)
     else:
       await error_handler(ctx, error)
 

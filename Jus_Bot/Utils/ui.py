@@ -114,7 +114,7 @@ class PaginatorView(discord.ui.View):
 
   async def send_to(self, ctx):
     self.user = ctx.author
-    self.message = await ctx.send(**self.send_kwargs)
+    self.message = await ctx.reply(**self.send_kwargs)
 
 
 
@@ -168,4 +168,17 @@ class ChoiceView(discord.ui.View):
       self.message = await ctx.response.send_message(view=self, **kwargs)
     else:
       self.user = ctx.author
-      self.message = await ctx.send(view=self, **kwargs)
+      self.message = await ctx.reply(view=self, **kwargs)
+
+
+
+
+
+#class Menu(discord.ui.View):
+  
+#  def __init__(self, pages: list, main: dict=None, **kwargs):
+#    super().__init__()
+#    self.pages = pages
+#
+#    self.delete_message = kwargs.pop('delete_message', False)
+#    self.timeout = kwargs.pop('timeout', 60.0)

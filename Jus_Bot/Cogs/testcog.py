@@ -21,7 +21,7 @@ class TestCog(commands.Cog):
       async def callback(self, select: discord.ui.select, interaction: discord.Interaction):
           await interaction.response.send_message('Hello', ephemeral=True) # to get the select options, you can use interaction.data
 
-    await ctx.send('Test', view=View())
+    await ctx.reply('Test', view=View())
 
   @commands.command(help='> Don\'t read this')
   async def paginView(self, ctx):

@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.commands import slash_command, message_command
+from discord.commands import slash_command, message_command, user_command
 from ..Utils import embed_template
 from ..PythonShell import python3
 import discord
@@ -22,6 +22,35 @@ class AppCommands(commands.Cog):
     code = re.sub("```python|```py|```", "", message.content).strip()
     s = await python3(code, ctx.user.mention)
     await ctx.respond(s)
+
+  @user_command(name='User Info', guild_ids=[837579283991887892])
+  async def user_info(self, ctx, member: discord.Member):
+    colour = member.accent_colour if member.accent_colour else member.colour
+    avatar = member.display_avatar.url
+
+    name = str(member)
+    nickname = member.nick
+
+    created = discord.utils.format_dt(member.created_at)
+    joined = discord.utils.format_dt(member.joined_at)
+
+    guild_perms = [p[0] for p in member.guild_permissions if p[1]]
+    channel_perms = [p[0] for p in ctx.channel.permissions_for(member) if p[1]]
+
+    roles = [r.mention for r in member.roles[1:]] if member.roles[1:] else ['None']
+    top_role = member.top_role.mention
+
+    embed = embed_template(ctx, colour=colour, title=name)
+    embed.set_thumbnail(url=avatar)
+    embed.add_field(name='Nickname', value=nickname)
+    embed.add_field(name='Account Created on', value=created)
+    embed.add_field(name='Joined server on', value=joined)
+    embed.add_field(name='Roles', value='\n'.join(roles))
+    embed.add_field(name='Top Role', value=top_role)
+    embed.add_field(name='Server Perms', value='```\n{}```'.format('\n'.join(guild_perms)), inline=False)
+    embed.add_field(name='Channel Perms', value='```\n{}```'.format('\n'.join(channel_perms)))
+
+    await ctx.respond(embed=embed)
 
 def setup(bot):
   bot.add_cog(AppCommands(bot))

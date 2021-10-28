@@ -19,7 +19,7 @@ class GuildUtils(commands.Cog):
     name = guild.name
     desc = prefix + guild.description if guild.description else discord.Embed.Empty
     icon = guild.icon.url
-    created = guild.created_at
+    created = prefix + discord.utils.format_dt(guild.created_at)
 
     owner = prefix + str(guild.owner)
 
@@ -44,10 +44,10 @@ class GuildUtils(commands.Cog):
 
     members = prefix + str(guild.member_count)
 
-    embed = embed_template(ctx, title=name, description=desc, timestamp=created
+    embed = embed_template(ctx, title=name, description=desc
     ).set_thumbnail(url=icon
-    ).set_footer(text='Server created at'
-    ).add_field(name='Server Owner', value=owner, inline=False
+    ).add_field(name='Server Owner', value=owner
+    ).add_field(name='Created on', value=created, inline=False
     ).add_field(name='Guild ID', value=guild_id
     ).add_field(name='Server Region', value=region
     ).add_field(name='Total Channels', value=channels
@@ -63,7 +63,7 @@ class GuildUtils(commands.Cog):
     ).add_field(name='Stages', value=stages
     ).add_field(name='Voice Channels', value=voice_channels)
 
-    await ctx.send(embed=embed)
+    await ctx.reply(embed=embed)
 
   @commands.command(
     help='> Find info about someone in this server',
@@ -101,7 +101,7 @@ class GuildUtils(commands.Cog):
     embed.add_field(name='Server Perms', value='```\n{}```'.format('\n'.join(guild_perms)), inline=False)
     embed.add_field(name='Channel Perms', value='```\n{}```'.format('\n'.join(channel_perms)))
 
-    await ctx.send(embed=embed)
+    await ctx.reply(embed=embed)
 
 
 

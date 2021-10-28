@@ -1,6 +1,7 @@
 import humanize
 import psutil
 import sys
+import os
 import discord
 from discord.ext import commands
 from ..Utils import embed_template
@@ -21,19 +22,26 @@ class Diagnostics(commands.Cog):
 
   @commands.command(help='> Check if the bot is ready')
   async def ready(self, ctx):
-    await ctx.send('Bot has connected to discord!')
+    await ctx.reply('Bot has connected to discord!')
 
   @commands.command(hidden=True)
   @commands.is_owner()
   async def kill(self, ctx):
-    await ctx.send('Bot dead')
+    await ctx.reply('Bot dead')
     await self.bot.close()
     self.bot.loop.close()
+    sys.exit()
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def restart(self, ctx):
+    await ctx.reply('Restarting...')
+    os.execv(sys.executable, ['python'] + sys.argv)
 
   @commands.command(help='> Get the websocket latency')
   async def ping(self, ctx):
     embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
-    await ctx.send(embed=embed)
+    await ctx.reply(embed=embed)
 
   @commands.command(help='> Get info about the bot')
   async def botinfo(self, ctx):
@@ -86,7 +94,7 @@ class Diagnostics(commands.Cog):
       
       message.append(f'Average websocket latency: {round(self.bot.latency*1000,1)}ms')
 
-      await ctx.send('\n'.join(message))
+      await ctx.reply('\n'.join(message))
 
     
 def setup(bot):

@@ -50,7 +50,7 @@ class Utils(commands.Cog):
           if not isinstance(command, SlashCommand) and not command.hidden:
             if cog_found == i or not arg:
               embed.add_field(name=command.name, value=command.help, inline=True)
-            elif command.name.lower() == arg.lower():
+            elif command.name.lower() == arg.lower() or arg.lower() in command.aliases:
               found = True
               embed.title, embed.description = command.name, command.help
 

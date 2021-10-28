@@ -13,7 +13,7 @@ class CogManager(commands.Cog):
   async def reload_cog(self, ctx, cog_name):
     name = 'Jus_Bot.Cogs.' + cog_name
     self.bot.reload_extension(name)
-    await ctx.send('Extension successfully reloaded')
+    await ctx.reply('Extension successfully reloaded')
   
   @commands.command()
   @commands.is_owner()
@@ -38,11 +38,11 @@ class CogManager(commands.Cog):
   async def toggle_suppress(self, ctx, cog_name=None):
     if not cog_name:
       self.bot.suppress = not self.bot.suppress
-      await ctx.send(f'Global error suppression is now {self.bot.suppress}')
+      await ctx.reply(f'Global error suppression is now {self.bot.suppress}')
     else:
       cog = self.bot.get_cog(cog_name)
       cog.suppress = not cog.suppress
-      await ctx.send(f'{cog.qualified_name}\'s error suppression is now {cog.suppress}')
+      await ctx.reply(f'{cog.qualified_name}\'s error suppression is now {cog.suppress}')
 
 
 def setup(bot):

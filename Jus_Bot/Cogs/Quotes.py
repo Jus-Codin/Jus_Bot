@@ -40,17 +40,17 @@ class Quotes(commands.Cog):
 #      quote = json.loads(file.read())
 #    q = quote.get(category, None)
 #    if q is None:
-#      await ctx.send('There is no such category')
+#      await ctx.reply('There is no such category')
 #    else:
 #      qdate = datetime.fromisoformat(q['date']).date()
 #      if datetime.today().date() == qdate or self.last_qod_update is None:
 #        # We do not know if we hit the rate limit, so we just use old quotes for now
 #        qoute, author = q['qoute'], q['author']
-#        await ctx.send(f'{quote}\n~{author}')
+#        await ctx.reply(f'{quote}\n~{author}')
 #      elif datetime.now() - self.last_qod_update < timedelta(hours=1, minutes=1):
 #        # Can't update or will hit rate limit...
 #        qoute, author = q['qoute'], q['author']
-#        await ctx.send(f'{quote}\n~{author}')
+#        await ctx.reply(f'{quote}\n~{author}')
 #      else:
 #        # We should be able to update...
 #        await self.update_qod.__call__()
@@ -59,12 +59,12 @@ class Quotes(commands.Cog):
   @commands.command(help='> Get a inspirational quote')
   async def inspquote(self, ctx):
     quote = await quotes.forismatic()
-    await ctx.send(quote)
+    await ctx.reply(quote)
   
   @commands.command(help='> Get a random paper quote')
   async def paperquote(self, ctx, language='en'):
     quote = await quotes.paper(language)
-    await ctx.send(quote)
+    await ctx.reply(quote)
 
 def setup(bot):
   bot.add_cog(Quotes(bot))
