@@ -1,21 +1,12 @@
 from discord.ext.commands.bot import BotBase
-from .PythonShell.pythonshell import python3
+from .CodeRunner import run_code, is_codeblock, format_code
 from .Utils import error_handler
 import discord
-import re
-
-def _pythonPrefix(s: str, channel: discord.Message.channel=None):
-  if hasattr(channel, 'name'):
-    if channel.name == 'python-shell':
-      return True
-  return all((
-      s.startswith('```python\n') or s.startswith('```py\n'),
-      s.endswith('```')
-  ))
 
 class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
   suppress = False
+  running_code = True
 
   def run(self, *args, **kwargs):
     self.token = args[0]
@@ -45,13 +36,14 @@ class JusBotBase(BotBase):
     channel = message.channel
     if message.author.bot:
       return
-    elif _pythonPrefix(message.content, channel):
-      code = re.sub("```python|```py|```", "", message.content).strip()
-      if code.startswith('i#'):
+    elif is_codeblock(message.content) and self.running_code:
+      lang, code = format_code(message.content)
+
+      if code.startswith('i#') or not lang:
         return
-      
+
       async with channel.typing():
-        s = await python3(code, message.author.mention)
+        s = await run_code(code, message.author.mention, lang)
 
       await channel.send(s)
     else:

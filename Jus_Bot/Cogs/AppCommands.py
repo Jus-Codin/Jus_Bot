@@ -1,9 +1,8 @@
 from discord.ext import commands
 from discord.commands import slash_command, message_command, user_command
 from ..Utils import embed_template
-from ..PythonShell import python3
+from ..CodeRunner import run_code, format_code
 import discord
-import re
 
 class AppCommands(commands.Cog):
   
@@ -17,10 +16,15 @@ class AppCommands(commands.Cog):
     embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
     await ctx.respond(embed=embed)
 
-  @message_command(name='Run Python', guild_ids=[837579283991887892])
-  async def python(self, ctx, message: discord.Message):
-    code = re.sub("```python|```py|```", "", message.content).strip()
-    s = await python3(code, ctx.user.mention)
+  @message_command(name='Run Code', guild_ids=[837579283991887892])
+  async def runcode(self, ctx, message: discord.Message):
+    lang, code = format_code(message.content)
+
+    if not lang:
+      return await ctx.respond('The code must be in a code block', ephemeral=True)
+      
+    s = await run_code(code, message.author.mention, lang)
+
     await ctx.respond(s)
 
   @user_command(name='User Info', guild_ids=[837579283991887892])

@@ -44,6 +44,16 @@ class CogManager(commands.Cog):
       cog.suppress = not cog.suppress
       await ctx.reply(f'{cog.qualified_name}\'s error suppression is now {cog.suppress}')
 
+  @commands.command()
+  @commands.is_owner()
+  async def toggle_code_running(self, ctx):
+    self.bot.running_code = not self.bot.running_code
+    if self.bot.running_code:
+      s = 'is now'
+    else:
+      s = 'has stopped'
+    await ctx.reply(f'Bot {s} listening for code to be run')
+
 
 def setup(bot):
   bot.add_cog(CogManager(bot))

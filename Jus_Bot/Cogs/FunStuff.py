@@ -1,6 +1,6 @@
 from discord.ext import commands, tasks
 from ..Utils import TriviaClient, ChoiceView, categories, embed_template
-from ..PythonShell import replChannel
+from ..CodeRunner import replChannel
 import asyncio
 import base64
 import discord
