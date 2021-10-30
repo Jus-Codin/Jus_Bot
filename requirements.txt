@@ -7,5 +7,4 @@ psutil >= 5.8.0
 pyowm >= 3.2.0
 pycountry >= 20.7.3
 aiopyston >= 1.2.1
-guesslang >= 2.2.1
 git+https://github.com/Pycord-Development/pycord#egg=py-cord[voice]
