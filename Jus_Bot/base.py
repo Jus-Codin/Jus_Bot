@@ -1,5 +1,5 @@
 from discord.ext.commands.bot import BotBase
-from .CodeRunner import run_code, is_codeblock, format_code
+from .CodeRunner import run_code, is_codeblock, format_code, run_file
 from .Utils import error_handler
 import discord
 
@@ -7,6 +7,7 @@ class JusBotBase(BotBase):
   '''Base bot to combine python shell and main features'''
   suppress = False
   running_code = True
+  run_files = True
 
   def run(self, *args, **kwargs):
     self.token = args[0]
@@ -46,5 +47,8 @@ class JusBotBase(BotBase):
         s = await run_code(code, message.author.mention, lang)
 
       await channel.send(s)
+    elif message.attachments and self.run_files:
+      for result in run_file(message.author.mention, *message.attachments):
+        await channel.send(result)
     else:
       await self.process_commands(message)

@@ -1,10 +1,13 @@
 from pyston import PystonClient, File
-from pyston.exceptions import InvalidLanguage
+from pyston.exceptions import TooManyRequests
+from asyncio import sleep
 import signal
 
 TIMEOUT = 1000
 MAX_LEN = 2000
 MAX_LINE = 10
+
+_client = PystonClient()
 
 def is_codeblock(s: str):
   return s.startswith('```') and s.endswith('```') and len(s) > 6
@@ -15,19 +18,32 @@ def format_code(s: str):
     return None, s[0]
   else:
     return s
-  
 
-async def run_code(code: str, mention: str, lang: str):
-  client = PystonClient()
-  code = [File(code, filename='code')]
+async def get_langs():
+  runtimes = _client._runtimes or await _client.runtimes()
+  langs = []
+  for runtime in runtimes:
+    langs.append(runtime.language)
+    if runtime.aliases:
+      langs.extend(runtime.aliases)
+  return langs
+
+async def run_code(code: str, mention: str, lang: str,  filename=None, _recursion=0):
+  if lang.lower() not in await get_langs():
+    return f'Unknown language, {mention}'
+  if isinstance(code, str):
+    code = [File(code, filename=filename or 'code')]
   try:
-    output = await client.execute(
-      lang,
+    output = await _client.execute(
+      lang.lower(),
       code,
       run_timeout = TIMEOUT
     )
-  except InvalidLanguage:
-    return f'This language is not able to be run on this bot, {mention}'
+  except TooManyRequests:
+    if _recursion > 5:
+      return f"Bot has been rate limited, try again later, {mention}"
+    await sleep(10)
+    return await run_code(code, mention, lang, _recursion+1)
   
   stage = output.run_stage or output.compile_stage
 
@@ -36,9 +52,9 @@ async def run_code(code: str, mention: str, lang: str):
   msg = f'Your {output.langauge} code has finished running with return code {returncode}'
 
   try:
-    name = signal.Signals(returncode).name
+    name = signal.strsignal(returncode)
     msg += f' ({name})'
-  except ValueError:
+  except Exception:
     pass
 
   result = stage.output
@@ -59,92 +75,24 @@ async def run_code(code: str, mention: str, lang: str):
     result = 'Output too large to send'
 
   return f'{mention}, {msg}.\n\n```{lang}\n{result}\n```'
-  """
-    backend = '''
-  import sys
-  sys.modules['sys'] = None
-  sys.modules['os'] = None
-  sys.modules['_io'] = None
-  sys.modules['io'] = None
-  sys.modules['subprocess'] = None
-  del sys
-  del __builtins__.open
-  del __loader__
-  '''
 
-    code = backend + code
+async def run_file(mention, *files):
+  results = []
+  for file in files:
+    filename_split = file.filename.split('.')
+    if len(filename_split) < 2:
+      results.append(f'Files must have a file extensions, {mention}')
+      break
+    # Have to do this in case some genius decides to give multiple file extensions
+    filename = filename_split[0]
+    lang = filename_split[-1]
 
-    args = (
-      sys.executable,
-      '-E',
-      '-I',
-      '-c',
-      code
-    )
+    source = await file.read()
+    try:
+      source.decode('utf-8')
+    except UnicodeDecodeError:
+      results.append(f"Cannot decode {file.filename}, {mention}")
+      break
 
-    python = await asyncio.create_subprocess_exec(
-      *args,
-      stdout = subprocess.PIPE,
-      stderr = subprocess.STDOUT
-    )
-
-    output_size = 0
-    output = []
-
-    while python.returncode is None:
-      try:
-        chars = await asyncio.wait_for(python.stdout.read(READ_CHUNK_SIZE), TIMEOUT)
-      except asyncio.TimeoutError:
-        python.terminate()
-        break
-
-      output_size += sys.getsizeof(chars)
-      output.append(chars)
-
-      if output_size > OUTPUT_MAX:
-        python.terminate()
-        break
-      
-    output = ''.join([chunk.decode() for chunk in output])
-
-    returncode = python.returncode if python.returncode is not None else signal.SIGTERM
-
-    result = subprocess.CompletedProcess(args, returncode, output, None)
-
-    returncode = result.returncode
-
-    msg = f'Your code has finished running with return code {returncode}'
-    err = ''
-
-    if returncode is None:
-      msg = 'Your code has failed'
-      err = result.stdout.strip()
-    elif returncode == 15:
-      msg = 'Your code timed out or ran out of memory'
-    elif returncode == 255:
-      msg = 'Your code has failed'
-      err = 'A fatal error has occurred'
-    else:
-      try:
-        name = signal.Signals(returncode).name
-        msg = f'{msg} ({name})'
-      except ValueError:
-        pass
-
-    if err:
-      output = err
-    else:
-      output = result.stdout.strip()
-      if output == '':
-        output = 'No output detected'
-      else:
-        output = [f'{i:03d} | {line}' for i, line in enumerate(output.split('\n'), 1)]
-        output = '\n'.join(output)
-
-    s = f'{mention}, {msg}.\n\n```\n{output}\n```'
-    if len(s) > 2000:
-      output = 'Output too large to send'
-      s = f'{mention}, {msg}.\n\n```\n{output}\n```'
-
-    return s
-  """
+    results.append(await run_code(source, mention, lang, filename))
+  return results

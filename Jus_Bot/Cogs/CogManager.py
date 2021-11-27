@@ -54,6 +54,16 @@ class CogManager(commands.Cog):
       s = 'has stopped'
     await ctx.reply(f'Bot {s} listening for code to be run')
 
+  @commands.command()
+  @commands.is_owner()
+  async def toggle_file_running(self, ctx):
+    self.bot.run_files = not self.bot.run_files
+    if self.bot.run_files:
+      s = 'is now'
+    else:
+      s = 'has stopped'
+    await ctx.reply(f'Bot {s} listening for files to be run')
+
 
 def setup(bot):
   bot.add_cog(CogManager(bot))

@@ -5,3 +5,4 @@ from .ui import *
 from .templates import *
 from .errorHandler import *
 from .trivia import *
+from .github import *

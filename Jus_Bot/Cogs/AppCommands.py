@@ -11,12 +11,12 @@ class AppCommands(commands.Cog):
     self.hidden = True
     self.suppress = False
 
-  @slash_command(name='ping', description='Get the websocket latency', guild_ids=[837579283991887892])
+  @slash_command(name='ping', description='Get the websocket latency', guild_ids=[837579283991887892, 914057960827781130])
   async def ping(self, ctx):
     embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
     await ctx.respond(embed=embed)
 
-  @message_command(name='Run Code', guild_ids=[837579283991887892])
+  @message_command(name='Run Code', guild_ids=[837579283991887892, 914057960827781130])
   async def runcode(self, ctx, message: discord.Message):
     lang, code = format_code(message.content)
 
@@ -27,7 +27,7 @@ class AppCommands(commands.Cog):
 
     await ctx.respond(s)
 
-  @user_command(name='User Info', guild_ids=[837579283991887892])
+  @user_command(name='User Info', guild_ids=[837579283991887892, 914057960827781130])
   async def user_info(self, ctx, member: discord.Member):
     colour = member.accent_colour if member.accent_colour else member.colour
     avatar = member.display_avatar.url
