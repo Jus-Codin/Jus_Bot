@@ -30,7 +30,7 @@ class Utils(commands.Cog):
     main_embed = embed_template(ctx, title='List of Command Catergories')
     cog_found = None
     found = False
-    extra = 'Use `Jus help [Catergory]/[Command]` to find out more!\n(Is case-sensitive)'
+    extra = 'Use `Jus help [Category]/[Command]` to find out more!\n(Is case-sensitive)'
 
     for i in self.bot.cogs:
       if not self.bot.cogs[i].hidden:

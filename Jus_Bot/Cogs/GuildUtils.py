@@ -23,8 +23,6 @@ class GuildUtils(commands.Cog):
 
     owner = prefix + str(guild.owner)
 
-    region = prefix + str(guild.region).replace('-', ' ').title().title()
-
     guild_id = prefix + str(guild.id)
 
     verify_lvl = prefix + str(guild.verification_level).capitalize()
@@ -49,7 +47,6 @@ class GuildUtils(commands.Cog):
     ).add_field(name='Server Owner', value=owner
     ).add_field(name='Created on', value=created, inline=False
     ).add_field(name='Guild ID', value=guild_id
-    ).add_field(name='Server Region', value=region
     ).add_field(name='Total Channels', value=channels
     ).add_field(name='Roles', value=roles
     ).add_field(name='Total Members', value=members
