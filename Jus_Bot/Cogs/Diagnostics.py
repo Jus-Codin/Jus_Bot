@@ -43,6 +43,11 @@ class Diagnostics(commands.Cog):
     embed = embed_template(ctx, title='Pong! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
     await ctx.reply(embed=embed)
 
+  @commands.command(help='> Get the websocket latency, kinda')
+async def pong(self, ctx):
+  embed = embed_template(ctx, title='Ping! \U0001F3D3', description=f'{round(self.bot.latency*1000,1)}ms')
+  await ctx.reply(embed=embed)
+
   @commands.command(help='> Get info about the bot')
   async def botinfo(self, ctx):
     message = [
