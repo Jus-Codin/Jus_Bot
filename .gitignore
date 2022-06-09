@@ -1,3 +1,7 @@
+# JusBot testing files
+bot_test.py
+setup.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
