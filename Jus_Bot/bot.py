@@ -11,11 +11,11 @@ from .utils import handle_error
 import typing
 
 if typing.TYPE_CHECKING:
-  from discord import Colour
+  from discord import Colour, Message
   from discord.ext.commands import Context, errors
   from .config import SetupConfigDict
 
-class YBNBot(Bot):
+class JusBot(Bot):
   """
   Represents a bot connecting to the Discord API
 
@@ -30,14 +30,18 @@ class YBNBot(Bot):
     config_dict = kwargs.pop('config', DEFAULT_CONFIG_DICT)
     self.config = ConfigManager(setup_config=setup_config, config_dict=config_dict)
     self.token = self.config['token']
+
     self.prefix = self.config['prefix']
+    if self.prefix.isalpha():
+      self.prefix += " "
+
     self.suppress = self.config['suppress']
 
     super().__init__(
-      command_prefix=when_mentioned_or(self.prefix),
       help_command=None, # Using custom help command
       status=self.config['status'],
       activity=self.config['activity_type'](self.config['activity_message']),
+      intents=self.config["intents"],
       case_insensitive=self.config['case_insensitive']
       *args, 
       **kwargs
@@ -80,8 +84,11 @@ class YBNBot(Bot):
     fmt = f'{hours}h, {minutes}m and {seconds}s'
     return (f'{days}d, ' + fmt) if days else fmt
 
-  async def get_prefix(self, message=None):
-    return [self.prefix, f"<@{self.user.id}> ", f"<@!{self.user.id}> "]
+  async def get_prefix(self, message: Message):
+    if message.content.lower().startswith(self.prefix):
+      return message.content[:len(self.prefix)]
+    else:
+      return [self.prefix, f"<@{self.user.id}> ", f"<@!{self.user.id}> "]
 
   @property
   def enable_eval(self) -> bool:

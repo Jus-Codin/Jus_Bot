@@ -4,12 +4,12 @@ import os
 import typing
 from json import loads
 
-from discord import Colour, Intents
+from discord import Colour, Intents, Game, Status, BaseActivity
 
 def get_setup_from_env() -> SetupConfigDict:
   """
   Gets all the setup parameters for the bot from env,
-  all variables must be uppercase and prefixed with `AVE_`
+  all variables must be uppercase and prefixed with `JUS_`
 
   Booleans can be specified with a number, `0` being `False` and `1` being `True`
   """
@@ -36,6 +36,9 @@ def get_setup_from_json(filename: str) -> SetupConfigDict:
 
 class ConfigDict(typing.TypedDict):
   intents: Intents
+  activity_message: str
+  activity_type: typing.Union[BaseActivity, None]
+  status: Status
   default_colour: typing.Callable[[], Colour]
   error_colour: typing.Callable[[], Colour]
   error_msg: typing.Dict[str, typing.List[str]]
@@ -44,14 +47,15 @@ class SetupConfigDict(typing.TypedDict):
   """Configurations needed to specified to run the bot"""
   prefix: str
   token: str
-  mirror_id: str
   suppress: bool
   case_insensitive: bool
   enable_eval: bool
 
 DEFAULT_CONFIG_DICT: ConfigDict = {
   "intents": Intents.all(),
-  "activity_message": "Yes but No",
+  "activity_message": "jus help",
+  "activity_type": Game,
+  "status": Status.online,
   "default_colour": Colour.random,
   "error_colour": Colour.brand_red,
   "error_msg": {
