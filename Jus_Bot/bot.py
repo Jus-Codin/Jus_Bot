@@ -4,8 +4,11 @@ from datetime import datetime
 
 from discord.ext.commands import Bot, when_mentioned_or
 
+from pyston.exceptions import InvalidLanguage, TooManyRequests
+
 from .config import DEFAULT_CONFIG_DICT, ConfigManager
 from .cogs import cogs
+from .piston import get_codeblocks, run_code, process_output
 from .utils import handle_error
 
 import typing
@@ -55,6 +58,29 @@ class JusBot(Bot):
   def run(self, *args, **kwargs):
     self.start_time = datetime.now()
     super().run(self.token, *args, **kwargs)
+
+  async def on_message(self, message: Message):
+    if message.author.bot:
+      return
+
+    codes = get_codeblocks(message.content)
+
+    if codes and self.enable_eval:
+      async with message.channel.typing():
+        for lang, code in codes:
+          if not code.startswith("i#"):
+            mention = message.author.mention
+            try:
+              output = await run_code(lang, code)
+              s = await process_output(output, mention)
+              await message.reply(s)
+            except InvalidLanguage:
+              await message.reply(f"Unknown language, {mention}")
+            except TooManyRequests:
+              await message.reply(f"Bot is currently handling too many requests, try again later, {mention}")
+    else:
+      await self.process_commands(message)
+
 
   async def on_command_error(self, ctx: Context, error: errors.CommandError):
     """|coro|
