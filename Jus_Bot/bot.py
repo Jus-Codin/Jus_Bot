@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from discord.ext.commands import Bot, when_mentioned_or
+from discord.ext.commands import Bot
 
 from pyston.exceptions import InvalidLanguage, TooManyRequests
 
@@ -35,7 +35,7 @@ class JusBot(Bot):
     self.token = self.config['token']
 
     self.prefix = self.config['prefix']
-    if self.prefix.isalpha():
+    if self.prefix[-1].isalpha():
       self.prefix += " "
 
     self.suppress = self.config['suppress']
