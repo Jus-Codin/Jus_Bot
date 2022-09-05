@@ -14,6 +14,7 @@ if TYPE_CHECKING:
   from typing import Dict
 
 class Quotes(Cog):
+  """Get some fancy quotes"""
 
   def __init__(self, bot: JusBot, hidden: bool, suppress: bool):
     self.bot = bot
@@ -23,17 +24,18 @@ class Quotes(Cog):
     self.client = QODClient()
 
     self.qods: Dict[str, Quote] = {}
+    self.categories = ()
 
     self.update_qod.start()
 
   @loop(hours=24)
   async def update_qod(self):
-    categories = await self.client.categories()
-    for category in categories:
-      try:
+    try:
+      self.categories = self.categories or await self.client.categories()
+      for category in self.categories:
         self.qods[category] = await self.client.qod(category=category)
-      except RateLimitExceeded:
-        pass
+    except RateLimitExceeded:
+      pass
 
   @command(help="Gives a Quote of the Day")
   async def qod(self, ctx: Context, category="inspire"):
@@ -46,5 +48,9 @@ class Quotes(Cog):
 
   @command(help="Get all available Quote of the Day categories")
   async def categories(self, ctx: Context):
-    categories = await self.client.categories()
-    embed = embed_template(self.bot, ctx.author, title="Available categories", description="\n".join(categories))
+    categories = self.categories
+    if categories:
+      embed = embed_template(self.bot, ctx.author, title="Available categories", description="\n".join(categories))
+    else:
+      embed = embed_template(self.bot, ctx.author, title="Rate Limited", description="Bot is currently rate limited, please try again later")
+    await ctx.reply(embed=embed)
