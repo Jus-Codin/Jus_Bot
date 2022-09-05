@@ -10,6 +10,7 @@ if TYPE_CHECKING:
   from ..bot import JusBot
 
 class Diagnostics(Cog):
+  """Random diagnostic commands"""
 
   def __init__(self, bot: JusBot, hidden: bool, suppress: bool):
     self.bot = bot
