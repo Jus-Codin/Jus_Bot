@@ -4,6 +4,10 @@ import os
 import typing
 from json import loads
 
+from .utils import ErrorType
+from .errors import ErrorHandler, DefaultErrorHandler
+from .help import HelpCog, DefaultHelpCog
+
 from discord import Colour, Intents, Game, Status, BaseActivity
 
 def get_setup_from_env() -> SetupConfigDict:
@@ -33,15 +37,18 @@ def get_setup_from_json(filename: str) -> SetupConfigDict:
     setup_config: SetupConfigDict = loads(f.read())
   return setup_config
 
+# TODO: Full rework of config system
 
 class ConfigDict(typing.TypedDict):
   intents: Intents
   activity_message: str
   activity_type: typing.Union[BaseActivity, None]
   status: Status
+  help_cog: HelpCog
   default_colour: typing.Callable[[], Colour]
   error_colour: typing.Callable[[], Colour]
-  error_msg: typing.Dict[str, typing.List[str]]
+  error_handler: ErrorHandler
+  error_msg: typing.Dict[ErrorType, typing.List[str]]
 
 class SetupConfigDict(typing.TypedDict):
   """Configurations needed to specified to run the bot"""
@@ -50,14 +57,19 @@ class SetupConfigDict(typing.TypedDict):
   suppress: bool
   case_insensitive: bool
   enable_eval: bool
+  wolfram_appid: str
+
+# TODO: Implement cog configuration settings
 
 DEFAULT_CONFIG_DICT: ConfigDict = {
   "intents": Intents.all(),
-  "activity_message": "jus help",
+  "activity_message": "jusdev help",
   "activity_type": Game,
   "status": Status.online,
+  "help_cog": DefaultHelpCog,
   "default_colour": Colour.random,
   "error_colour": Colour.brand_red,
+  "error_handler": DefaultErrorHandler,
   "error_msg": {
     "default": [
       "Error!",
@@ -104,7 +116,7 @@ class ConfigManager:
     self._configs: typing.Union[SetupConfigDict, ConfigDict] = {**setup_config, **config_dict}
 
   @property
-  def values(self):
+  def values(self) -> typing.Union[SetupConfigDict, ConfigDict]:
     return self._configs
 
   @property
