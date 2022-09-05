@@ -9,11 +9,12 @@ from pyston.exceptions import InvalidLanguage, TooManyRequests
 from .config import DEFAULT_CONFIG_DICT, ConfigManager
 from .cogs import cogs
 from .piston import get_codeblocks, run_code, process_output
-from .utils import handle_error
+from .errors import ErrorHandler
+from .help import HelpCog
 
-import typing
+from typing import TYPE_CHECKING, Callable, Dict, Optional
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
   from discord import Colour, Message
   from discord.ext.commands import Context, errors
   from .config import SetupConfigDict
@@ -30,33 +31,57 @@ class JusBot(Bot):
   # TODO: Implement error handling
 
   def __init__(self, setup_config: SetupConfigDict, *args, **kwargs):
-    config_dict = kwargs.pop('config', DEFAULT_CONFIG_DICT)
+    config_dict = kwargs.pop("config", DEFAULT_CONFIG_DICT)
     self.config = ConfigManager(setup_config=setup_config, config_dict=config_dict)
-    self.token = self.config['token']
+    self.token = self.config["token"]
 
-    self.prefix = self.config['prefix']
+    self.prefix = self.config["prefix"]
     if self.prefix[-1].isalpha():
       self.prefix += " "
 
-    self.suppress = self.config['suppress']
+    self.suppress = self.config["suppress"]
+
+    error_handler = self.config["error_handler"]
+
+    if not issubclass(error_handler, ErrorHandler):
+      raise TypeError(
+        f"Error handler must be a `ErrorHandler` type, not {error_handler.__class__}"
+      )
+    
+    self.error_handler = error_handler(self)
 
     super().__init__(
+      command_prefix=self.prefix,
       help_command=None, # Using custom help command
-      status=self.config['status'],
-      activity=self.config['activity_type'](self.config['activity_message']),
+      status=self.config["status"],
+      activity=self.config["activity_type"](self.config["activity_message"]),
       intents=self.config["intents"],
-      case_insensitive=self.config['case_insensitive']
+      case_insensitive=self.config["case_insensitive"]
       *args, 
       **kwargs
     )
 
+  async def setup_hook(self):
     for cog in cogs:
       # TODO: Implement cog configurations
+      await self.add_cog(cog(self, False, False))
       print(f"Loaded cog {cog}")
-      self.add_cog(cog(self, False, False))
+
+    print("Setting up help command...")
+
+    help_cog = self.config["help_cog"]
+
+    if not issubclass(help_cog, HelpCog):
+      raise TypeError(f"help_cog must be a `HelpCog` type, not {help_cog.__class__}")
+
+    self._help_cog = None
+
+    # TODO: Implement cog configurations, currently this will just use bot.suppress
+    await self.set_help_cog(help_cog(self, self.suppress, False))
+
+    self.start_time = datetime.now()
 
   def run(self, *args, **kwargs):
-    self.start_time = datetime.now()
     super().run(self.token, *args, **kwargs)
 
   async def on_message(self, message: Message):
@@ -87,28 +112,20 @@ class JusBot(Bot):
 
     The default command error handler provided by the bot
     """
-    if self.extra_events.get('on_command_error', None):
+    if self.extra_events.get("on_command_error", None):
       return
 
-    command = ctx.command
-    if command and command.has_error_handler():
-      return
-
-    cog = ctx.cog
-    if cog and (cog.has_error_handler() or cog.suppress):
-      return
-
-    await handle_error(self, ctx, error)
+    await self.error_handler.handle_error(ctx, error)
 
   @property
   def uptime(self) -> str:
     """Get the uptime of the bot"""
     timediff = datetime.now() - self.start_time
-    hours, remainder = divmod(timediff, 3600)
+    hours, remainder = divmod(int(timediff.total_seconds()), 3600)
     minutes, seconds = divmod(remainder, 60)
     days, hours = divmod(hours, 24)
-    fmt = f'{hours}h, {minutes}m and {seconds}s'
-    return (f'{days}d, ' + fmt) if days else fmt
+    fmt = f"{hours}h, {minutes}m and {seconds}s"
+    return (f"{days}d, " + fmt) if days else fmt
 
   async def get_prefix(self, message: Message):
     if message.content.lower().startswith(self.prefix):
@@ -117,23 +134,51 @@ class JusBot(Bot):
       return [self.prefix, f"<@{self.user.id}> ", f"<@!{self.user.id}> "]
 
   @property
+  def wolfram_appid(self) -> str:
+    return self.config["wolfram_appid"]
+
+  @property
   def enable_eval(self) -> bool:
     """Whether the bot will run code"""
     return self.config['enable_eval']
 
   @property
-  def default_embed_colour(self) -> typing.Callable[[], Colour]:
-    """The default colour for the bot's embeds"""
-    return self.config['default_colour']
+  def default_embed_colour(self) -> Callable[[], Colour]:
+    """The default colour for the bot"s embeds"""
+    return self.config["default_colour"]
 
   @property
-  def error_embed_colour(self) -> typing.Callable[[], Colour]:
-    """The default colour for the bot's error embeds"""
-    return self.config['error_colour']
+  def error_embed_colour(self) -> Callable[[], Colour]:
+    """The default colour for the bot"s error embeds"""
+    return self.config["error_colour"]
 
   @property
-  def error_msg(self) -> typing.Dict[str, list]:
+  def error_msg(self) -> Dict[str, list]:
     """The random error messages for the bot"""
-    return self.config['error_msg']
+    return self.config["error_msg"]
 
-  
+  async def set_help_cog(self, cog: Optional[HelpCog]):
+    if cog is not None:
+      if not isinstance(cog, HelpCog):
+        raise TypeError(f"help_cog must be an instance of `HelpCog`, not {cog.__class__}")
+      if self._help_cog is not None:
+        await self.remove_cog(self._help_cog.qualified_name)
+      self._help_cog = cog
+      await self.add_cog(cog)
+    elif self._help_cog is not None:
+      await self.remove_cog(self._help_cog.qualified_name)
+      self._help_cog = None
+    else:
+      self._help_cog = None
+
+  @property
+  def error_handler(self) -> ErrorHandler:
+    return self._error_handler
+
+  @error_handler.setter
+  def error_handler(self, value: ErrorHandler) -> None:
+    if not isinstance(value, ErrorHandler):
+      raise TypeError(
+        f"Error handler must be a `ErrorHandler` type, not {value.__class__}"
+      )
+    self._error_handler = value
