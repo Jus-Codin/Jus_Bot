@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 MAX_LEN = 2000
 MAX_LINE = 10
 
-_client = PystonClient()
+
 
 
 def get_codeblocks(code: str) -> typing.List[typing.Tuple[str, str]]:
@@ -20,8 +20,9 @@ def get_codeblocks(code: str) -> typing.List[typing.Tuple[str, str]]:
   return codeblocks
 
 async def run_code(lang: str, code: str, filename: str = None) -> Output:
+  client = PystonClient()
   code = [File(code, filename=filename)]
-  output = await _client.execute(
+  output = await client.execute(
     lang.lower(),
     code
   )
