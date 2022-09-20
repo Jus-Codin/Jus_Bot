@@ -54,7 +54,7 @@ class InterfaceView(View):
 
   async def on_timeout(self): # TODO: Fix error where message cannot be found on timeout
     if self.delete_on_timeout:
-      await self.message.delete()
+      await self.parent.message.delete()
     else:
       self.disable_all()
       await self.parent.update()
@@ -115,8 +115,11 @@ class Interface:
       self.message = await ctx.reply(**kwargs)
     elif isinstance(ctx, discord.Interaction):
       self.user = ctx.user
-      await ctx.response.send_message(**kwargs)
-      self.message = await ctx.original_response()
+      if ctx.response.is_done():
+        self.message = await ctx.followup.send(wait=True, **kwargs)
+      else:
+        await ctx.response.send_message(**kwargs)
+        self.message = await ctx.original_response()
     else:
       raise TypeError(f'expected Context or ApplicationContext not {ctx.__class__!r}')
     self.bot = ctx.bot
@@ -139,8 +142,12 @@ class Interface:
     kwargs = {**self.kwargs, **kwargs}
     if self.interface_sent:
       if interaction is not None:
-        await interaction.response.edit_message(**kwargs)
-        self.message = await interaction.original_response()
+        if interaction.response.is_done():
+          self.message = await interaction.original_response()
+          self.message = await self.message.edit(**kwargs)
+        else:
+          await interaction.response.edit_message(**kwargs)
+          self.message = await interaction.original_response()
       else:
         self.message = await self.message.edit(**kwargs)
     else:
