@@ -14,6 +14,8 @@ from .help import HelpCog
 
 from typing import TYPE_CHECKING, Callable, Dict, Optional
 
+import discord
+
 if TYPE_CHECKING:
   from discord import Colour, Message
   from discord.ext.commands import Context, errors
@@ -90,19 +92,18 @@ class JusBot(Bot):
 
     codes = get_codeblocks(message.content)
 
-    if codes and self.enable_eval:
+    if codes and self.enable_eval and not code.startswith("i#"):
       async with message.channel.typing():
         for lang, code in codes:
-          if not code.startswith("i#"):
-            mention = message.author.mention
-            try:
-              output = await run_code(lang, code)
-              s = await process_output(output, mention)
-              await message.reply(s)
-            except InvalidLanguage:
-              await message.reply(f"Unknown language, {mention}")
-            except TooManyRequests:
-              await message.reply(f"Bot is currently handling too many requests, try again later, {mention}")
+          mention = message.author.mention
+          try:
+            output = await run_code(lang, code)
+            s = await process_output(output, mention)
+            await message.reply(discord.utils.escape_mentions(s))
+          except InvalidLanguage:
+            await message.reply(f"Unknown language, {mention}")
+          except TooManyRequests:
+            await message.reply(f"Bot is currently handling too many requests, try again later, {mention}")
     else:
       await self.process_commands(message)
 
