@@ -64,17 +64,17 @@ class DefaultErrorHandler(ErrorHandler):
 
   async def send_error_embed(self, msg: str, ctx: Context, err_type: Optional[ErrorType]=None):
     """Responds to a command that raises an error with an embed"""
-    embed = error_template(self.bot, ctx, description=msg, err_type=err_type)
+    embed = error_template(self.bot, ctx.author, description=msg, err_type=err_type)
     await ctx.reply(embed=embed)
 
   async def on_error_command_not_found(self, context: Context, error: errors.CommandNotFound):
-    await self.send_error_embed("**cOmMaNd DoEsN\'t ExIsT**", context.author, ErrorType.NOT_FOUND)
+    await self.send_error_embed("**cOmMaNd DoEsN\'t ExIsT**", context, ErrorType.NOT_FOUND)
 
   async def on_error_missing_permissions(self, context: Context, error: errors.MissingPermissions):
-    await self.send_error_embed("Your permissions are far inferior for this command", context.author, ErrorType.BAD_PERMS)
+    await self.send_error_embed("Your permissions are far inferior for this command", context, ErrorType.BAD_PERMS)
 
   async def on_error_not_owner(self, context: Context, error: errors.NotOwner):
-    await self.send_error_embed("Only the owner of the bot can run this command", context.author, ErrorType.BAD_PERMS)
+    await self.send_error_embed("Only the owner of the bot can run this command", context, ErrorType.BAD_PERMS)
 
   async def on_error_no_private_message(self, context: Context, error: errors.NoPrivateMessage):
-    await self.send_error_embed("This command can only be run in servers!", context.author)
+    await self.send_error_embed("This command can only be run in servers!", context)
