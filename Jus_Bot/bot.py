@@ -92,18 +92,19 @@ class JusBot(Bot):
 
     codes = get_codeblocks(message.content)
 
-    if codes and self.enable_eval and not code.startswith("i#"):
+    if codes and self.enable_eval:
       async with message.channel.typing():
         for lang, code in codes:
-          mention = message.author.mention
-          try:
-            output = await run_code(lang, code)
-            s = await process_output(output, mention)
-            await message.reply(discord.utils.escape_mentions(s))
-          except InvalidLanguage:
-            await message.reply(f"Unknown language, {mention}")
-          except TooManyRequests:
-            await message.reply(f"Bot is currently handling too many requests, try again later, {mention}")
+          if not code.startswith("i#"):
+            mention = message.author.mention
+            try:
+              output = await run_code(lang, code)
+              s = await process_output(output, mention)
+              await message.reply(discord.utils.escape_mentions(s))
+            except InvalidLanguage:
+              await message.reply(f"Unknown language, {mention}")
+            except TooManyRequests:
+              await message.reply(f"Bot is currently handling too many requests, try again later, {mention}")
     else:
       await self.process_commands(message)
 
