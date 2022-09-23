@@ -28,7 +28,7 @@ async def run_code(lang: str, code: str, filename: str = None) -> Output:
   )
   return output
 
-async def process_output(output: Output, mention: str):
+async def process_output(output: Output):
   stage = output.run_stage or output.compile_stage
   returncode = stage.signal or stage.code
   lang = output.langauge
@@ -43,8 +43,8 @@ async def process_output(output: Output, mention: str):
   else:
     lang = ''
     result = 'No output detected'
-  if len(result + msg + mention + lang) + 45 > MAX_LEN:
+  if len(result + msg + lang) + 45 > MAX_LEN:
     lang = ''
     result = 'Output too large to send'
   
-  return f'{mention}, {msg}.\n\n```{lang}\n{result}\n```'
+  return f'{msg}.\n\n```{lang}\n{result}\n```'

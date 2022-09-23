@@ -99,7 +99,7 @@ class JusBot(Bot):
             mention = message.author.mention
             try:
               output = await run_code(lang, code)
-              s = await process_output(output, mention)
+              s = await process_output(output)
               await message.reply(discord.utils.escape_mentions(s))
             except InvalidLanguage:
               await message.reply(f"Unknown language, {mention}")
