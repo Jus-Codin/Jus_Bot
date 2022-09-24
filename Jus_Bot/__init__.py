@@ -1,14 +1,17 @@
-from discord import Bot
-from .base import JusBotBase
-from .Web import open_web
+__title__ = "JusBot"
+__author__ = "JusCodin"
+__version__ = "5.0.0a1"
 
-__version__ = '4.0.0a'
-__all__ = (
-  'Jus_Bot',
-  'open_web'
-)
+from .bot import JusBot
+from .config import get_setup_from_env, get_setup_from_json
 
-class Jus_Bot(JusBotBase, Bot):
-  '''Main bot with modified BotBase'''
+from typing import NamedTuple, Literal
 
-  pass
+class VersionInfo(NamedTuple):
+  major: int
+  minor: int
+  micro: int
+  releaselevel: Literal["alpha", "beta", "candidate", "final"]
+  serial: int
+
+version_info: VersionInfo = VersionInfo(major=5, minor=0, micro=0, releaselevel="alpha", serial=1)
