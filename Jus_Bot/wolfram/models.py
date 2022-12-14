@@ -461,8 +461,10 @@ class FullResults(Model[FullResultsDict]):
     )
   )
   
-  assumptions: Optional[AssumptionsCollection] = optional_field(
-    factory=AssumptionsCollection.from_dict
+  assumptions: Optional[List[AssumptionsCollection]] = optional_field(
+    factory=always_list_factory(
+      AssumptionsCollection.from_dict
+    )
   )
 
   error: Optional[Error] = optional_field(
