@@ -128,18 +128,14 @@ class Model(Generic[DictT]):
   @classmethod
   def from_dict(cls, raw: DictT):
     """Constructs the model from a mapping"""
-    try:
-      return cls(
-        _raw = raw,
-        **{
-          k: v
-          for k, v in raw.items()
-          if k in cls.__dataclass_fields__.keys()
-        }
-      )
-    except AttributeError as e:
-      print(raw)
-      raise e
+    return cls(
+      _raw = raw,
+      **{
+        k: v
+        for k, v in raw.items()
+        if k in cls.__dataclass_fields__.keys()
+      }
+    )
 
   @property
   def _to_dict(self) -> DictT:
@@ -465,8 +461,10 @@ class FullResults(Model[FullResultsDict]):
     )
   )
   
-  assumptions: Optional[AssumptionsCollection] = optional_field(
-    factory=AssumptionsCollection.from_dict
+  assumptions: Optional[List[AssumptionsCollection]] = optional_field(
+    factory=always_list_factory(
+      AssumptionsCollection.from_dict
+    )
   )
 
   error: Optional[Error] = optional_field(
@@ -479,7 +477,7 @@ class FullResults(Model[FullResultsDict]):
 
   @property
   def is_error(self) -> bool:
-    return self.error is not None
+    return self.error is not False
 
   @property
   def primary(self) -> Optional[Pod]:
@@ -506,7 +504,7 @@ class FullResults(Model[FullResultsDict]):
     A fallthrough result occurs when the API does not understand your query.
     For more information, read https://products.wolframalpha.com/api/documentation/#queries-that-are-not-understood
     """
-    return not self.success and self.error is None
+    return not self.success and not self.is_error
 
   @property
   def fallthrough(self):
