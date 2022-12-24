@@ -26,7 +26,10 @@ class WolframAlpha(Cog):
   @command(help="Search up something using the Wolfram|Alpha API")
   async def wolfram(self, ctx: Context, *, text):
     async with ctx.typing():
-      res = await self.client.full_results_query(text)
+      try:
+        res = await self.client.full_results_query(text)
+      except AttributeError:
+        return
 
     embeds = []
     if res.success:
@@ -88,7 +91,7 @@ class WolframAlpha(Cog):
         ]
       )
 
-      await paginator.send_to(ctx)
+      return await paginator.send_to(ctx)
 
     elif res.is_fallthrough:
       embed = error_template(
@@ -123,8 +126,6 @@ class WolframAlpha(Cog):
       else:
         embed.description = res.fallthrough.msg
 
-      await ctx.send(embed=embed)
-
     elif res.is_error:
       embed = error_template(
         self.bot, ctx.author,
@@ -136,6 +137,8 @@ class WolframAlpha(Cog):
         url="https://wolframalpha.com/",
         icon_url=self.bot.user.display_avatar.url
       )
+
+      print(res.raw)
       
     
     else:
@@ -150,4 +153,4 @@ class WolframAlpha(Cog):
         icon_url=self.bot.user.display_avatar.url
       )
       
-      await ctx.send(embed=embed)
+    await ctx.send(embed=embed)

@@ -128,14 +128,18 @@ class Model(Generic[DictT]):
   @classmethod
   def from_dict(cls, raw: DictT):
     """Constructs the model from a mapping"""
-    return cls(
-      _raw = raw,
-      **{
-        k: v
-        for k, v in raw.items()
-        if k in cls.__dataclass_fields__.keys()
-      }
-    )
+    try:
+      return cls(
+        _raw = raw,
+        **{
+          k: v
+          for k, v in raw.items()
+          if k in cls.__dataclass_fields__.keys()
+        }
+      )
+    except AttributeError as e:
+      print(raw)
+      raise e
 
   @property
   def _to_dict(self) -> DictT:
