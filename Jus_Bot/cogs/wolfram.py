@@ -34,7 +34,7 @@ class WolframAlpha(Cog):
       if res.assumptions is None:
         assumption = "None"
       else:
-        assumption = res.assumptions.text
+        assumption = res.assumptions[0].text
         embed = embed_template(
           self.bot, ctx.author,
           title="Results from Wolfram|Alpha",
